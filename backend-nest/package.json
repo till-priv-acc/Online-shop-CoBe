@@ -1,6 +1,26 @@
 {
+  "name": "backend-nest",
+  "version": "1.0.0",
+  "description": "NestJS Backend für Onlineshop",
+  "main": "dist/main.js",
+  "scripts": {
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "build": "nest build"
+  },
+  "dependencies": {
+    "@nestjs/platform-express": "^11.1.14",
+    "@nestjs/typeorm": "^11.0.0",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "sqlite3": "^5.1.7",
+    "typeorm": "^0.3.28"
+  },
   "devDependencies": {
     "@nestjs/cli": "^11.0.16",
+    "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/express": "^5.0.6",
     "@types/node": "^25.3.0",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
