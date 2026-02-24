@@ -3,5 +3,5 @@ export interface User {
   name: string;
   password: string;
   email: string;
-  isadmin: boolean;     // true = Admin, false = User
+  isAdmin: boolean;     // true = Admin, false = User
 }
