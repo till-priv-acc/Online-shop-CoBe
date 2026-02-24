@@ -1,2 +1,12 @@
 # Online-shop
-Online-Shop mit Next und Nest für Bewerbungen und co.. Hier soll Login, Waren CRUD und Warenkorb entstehen.
+Online-Shop mit Next und Nest für Bewerbungen und co.. 
+
+- **Frontend**
+  - Login
+  - Warenansicht
+  - Admin-Ansicht
+
+- **Backend**
+  - Funktionen für Login
+  - Warenausgabe
+  - Admin-Funktionen
