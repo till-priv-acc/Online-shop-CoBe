@@ -128,7 +128,7 @@ export default function ProfilePage() {
                 <Typography variant="body1" fontWeight={600}>{user?.email}</Typography>
 
                 <Typography variant="body2" color="text.secondary">UserID:</Typography>
-                <Typography variant="body1" fontWeight={600} sx={{ wordBreak: "break-all" }}>{user?.id}</Typography>
+                <Typography variant="body1" fontWeight={600} sx={{ wordBreak: "break-all", color: "#119a21" }}>{user?.id}</Typography>
 
                 <Typography variant="body2" color="text.secondary">Rolle:</Typography>
                 <Typography variant="body1" fontWeight={600}>{user?.isAdmin ? "ADMIN" : "USER"}</Typography>
@@ -136,13 +136,18 @@ export default function ProfilePage() {
             </Box>
 
             {/* Adresse */}
-            <Box sx={{ width: "100%", background: "#fff", p: 3, borderRadius: 2, boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
+            <Box sx={{ width: "100%", mb: 4, background: "#fff", p: 3, borderRadius: 2, boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
                 <Typography variant="h6" mb={2} sx={{ borderBottom: "1px solid #eee", pb: 1 }}>Adresse</Typography>
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
                 <Typography variant="body1" fontWeight={600}>{user?.street} {user?.hNumber}</Typography>
                 <Typography variant="body1" fontWeight={600}>{user?.pCode} {user?.town}</Typography>
                 <Typography variant="body1" fontWeight={600}>{user?.country}</Typography>
                 </Box>
+            </Box>
+
+            {/* Logout Button */}
+            <Box sx={{ mt: "auto" }}>
+                <LogoutButton />
             </Box>
             </Box>
 
