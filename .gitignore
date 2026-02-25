@@ -17,3 +17,6 @@ npm-debug.log*
 
 # SQLite Database
 *.db
+
+# Ignoriere alle Logs
+logs/
