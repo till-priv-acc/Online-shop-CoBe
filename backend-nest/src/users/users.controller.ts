@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Res, UnauthorizedException, BadRequestException  } from '@nestjs/common';
-import type { Response } from 'express';
+import { Controller, Get, Post, Body, Res, Req, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import type { Response, Request } from 'express';
 import { UsersService } from './users.service';
 import * as bcrypt from 'bcrypt';
+import type { Session } from 'express-session';
 import { CreateUserDto, GetUserDto } from './entities/users.dto';
 
 @Controller('users')
@@ -11,28 +12,28 @@ export class UsersController {
   // --------------------
   // Login
   // --------------------
-  @Post('login')
-  async login(
-    @Body() body: { email: string; password: string },
-    @Res({ passthrough: true }) res: Response
-  ) {
-    // validateUser prüft Email + gehashtes Passwort und gibt nur ID zurück
-    const userId = await this.usersService.validateUser(body.email, body.password);
-    if (!userId) throw new UnauthorizedException('Invalid credentials');
+ @Post('login')
+async login(
+  @Body() body: { email: string; password: string },
+  @Req() req: Request & { session: Session & { userId?: string } },
+) {
+  const userId = await this.usersService.validateUser(body.email, body.password);
+  if (!userId) throw new UnauthorizedException('Invalid credentials');
 
-    // Cookie setzen (HttpOnly, minimalistisch)
-    res.cookie('userId', userId, { httpOnly: true });
+  // Session speichern
+  req.session.userId = userId;
 
-    return { message: 'Login erfolgreich', userId };
-  }
+  return { message: 'Login erfolgreich', userId };
+}
 
   // --------------------
   // Logout
   // --------------------
   @Post('logout')
-  async logout(@Res({ passthrough: true }) res: Response) {
-    // Cookie löschen
-    res.clearCookie('userId');
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    req.session.destroy(err => {
+      if (err) console.error('Session destroy error:', err);
+    });
     return { message: 'Logout erfolgreich' };
   }
 
@@ -42,33 +43,41 @@ export class UsersController {
   @Post('create')
   async createUser(
     @Body() createUserDto: CreateUserDto,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response
   ): Promise<GetUserDto> {
     try {
       const user = await this.usersService.create(createUserDto);
 
-      // Optional: User direkt nach Erstellung einloggen
-      res.cookie('userId', user.id, { httpOnly: true });
+      // Session direkt nach Erstellung setzen
+      req.session.userId = user.id;
 
       return user; // GetUserDto ohne Passwort
     } catch (err) {
-        if (err instanceof Error) {
-            throw new BadRequestException(err.message);
-        }
-        throw new BadRequestException('Unknown error');
+      if (err instanceof Error) {
+        throw new BadRequestException(err.message);
+      }
+      throw new BadRequestException('Unknown error');
     }
   }
-  // --------------------
-  // Get User Data
-  // --------------------
-  @Get('me')
-  async getUserData(@Res({ passthrough: true }) res: Response): Promise<GetUserDto> {
-    const userId = res.req.cookies['userId'];
-    if (!userId) throw new UnauthorizedException('Not logged in');
 
-    const user = await this.usersService.findById(userId);
-    if (!user) throw new UnauthorizedException('User not found');
+@Get('check-cookie')
+async checkCookie(
+  @Req() req: Request & { session: Session & { userId?: string } }
+) {
+  return { loggedIn: !!req.session.userId };
+}
 
-    return user; // Already a GetUserDto, Passwort nicht enthalten
-  }
+@Get('me')
+async getUserData(
+  @Req() req: Request & { session: Session & { userId?: string } }
+) {
+  const userId = req.session.userId;
+  if (!userId) throw new UnauthorizedException('Not logged in');
+
+  const user = await this.usersService.findById(userId);
+  if (!user) throw new UnauthorizedException('User not found');
+
+  return user;
+}
 }

@@ -16,10 +16,10 @@ export default function LoginForm() {
     setError("");
 
     try {
-      await api.post("/users/login", { email, password });
-      router.push("/userpage"); // Weiterleitung nach Login
+        await api.post("/users/login", { email, password });
+        router.push("/userpage"); // Weiterleitung nach Login
     } catch (err: any) {
-      setError(err.response?.data?.message || "Login fehlgeschlagen");
+        setError(err.response?.data?.message || "Login fehlgeschlagen");
     }
   };
 
