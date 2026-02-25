@@ -10,10 +10,10 @@ async function bootstrap() {
 
   // CORS für Frontend mit Credentials
   app.enableCors({
-    origin: 'http://localhost:3001', // z. B. dein Next.js-Frontend
+    origin: 'http://localhost:3000', // z. B. dein Next.js-Frontend
     credentials: true,
   });
 
-  await app.listen(3000);
+  await app.listen(3001);
 }
 bootstrap();
