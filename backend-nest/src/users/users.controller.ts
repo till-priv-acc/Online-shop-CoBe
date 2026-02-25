@@ -1,12 +1,16 @@
-import { Controller, Get, Post, Body, Res, UnauthorizedException, BadRequestException  } from '@nestjs/common';
-import type { Response } from 'express';
+import { Controller, Get, Post, Body, Res, Req, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import type { Response, Request } from 'express';
 import { UsersService } from './users.service';
-import * as bcrypt from 'bcrypt';
 import { CreateUserDto, GetUserDto } from './entities/users.dto';
+import { UserLogger } from '../logger/user-logger.service';
+import type { Session } from 'express-session';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly logger: UserLogger, // <-- Logger injiziert
+  ) {}
 
   // --------------------
   // Login
@@ -14,25 +18,46 @@ export class UsersController {
   @Post('login')
   async login(
     @Body() body: { email: string; password: string },
-    @Res({ passthrough: true }) res: Response
+    @Req() req: Request & { session: Session & { userId?: string } },
   ) {
-    // validateUser prüft Email + gehashtes Passwort und gibt nur ID zurück
-    const userId = await this.usersService.validateUser(body.email, body.password);
-    if (!userId) throw new UnauthorizedException('Invalid credentials');
+    this.logger.log(`[UsersController] Login attempt for email: ${body.email}`);
 
-    // Cookie setzen (HttpOnly, minimalistisch)
-    res.cookie('userId', userId, { httpOnly: true });
+    try {
+      const userId = await this.usersService.validateUser(body.email, body.password);
+      if (!userId) {
+        this.logger.warn(`[UsersController] Invalid credentials for email: ${body.email}`);
+        throw new UnauthorizedException('Invalid credentials');
+      }
 
-    return { message: 'Login erfolgreich', userId };
+      req.session.userId = userId;
+      this.logger.log(`[UsersController] Login successful for userId: ${userId}`);
+      return { message: 'Login erfolgreich', userId };
+    } catch (err) {
+      if (err instanceof Error) {
+        this.logger.error(`[UsersController] Error during login for email: ${body.email}`, err.stack);
+        throw err;
+      } else {
+        this.logger.error(`[UsersController] Unknown error during login for email: ${body.email}`);
+        throw new UnauthorizedException('Unknown error');
+      }
+    }
   }
 
   // --------------------
   // Logout
   // --------------------
   @Post('logout')
-  async logout(@Res({ passthrough: true }) res: Response) {
-    // Cookie löschen
-    res.clearCookie('userId');
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    this.logger.log('[UsersController] Logout attempt');
+
+    req.session.destroy((err) => {
+      if (err) {
+        this.logger.error('[UsersController] Session destroy error', err.stack);
+      } else {
+        this.logger.log('[UsersController] Session destroyed successfully');
+      }
+    });
+
     return { message: 'Logout erfolgreich' };
   }
 
@@ -42,33 +67,60 @@ export class UsersController {
   @Post('create')
   async createUser(
     @Body() createUserDto: CreateUserDto,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response
   ): Promise<GetUserDto> {
+    this.logger.log(`[UsersController] Create user attempt: ${createUserDto.email}`);
+
     try {
       const user = await this.usersService.create(createUserDto);
 
-      // Optional: User direkt nach Erstellung einloggen
-      res.cookie('userId', user.id, { httpOnly: true });
+      req.session.userId = user.id;
+      this.logger.log(`[UsersController] User created successfully: ${user.email} (ID: ${user.id})`);
 
-      return user; // GetUserDto ohne Passwort
+      return user;
     } catch (err) {
-        if (err instanceof Error) {
-            throw new BadRequestException(err.message);
-        }
-        throw new BadRequestException('Unknown error');
+      if (err instanceof Error) {
+        this.logger.error(`[UsersController] Error creating user ${createUserDto.email}: ${err.message}`, err.stack);
+        throw new BadRequestException(err.message);
+      }
+      this.logger.error(`[UsersController] Unknown error creating user ${createUserDto.email}`);
+      throw new BadRequestException('Unknown error');
     }
   }
+
   // --------------------
-  // Get User Data
+  // Check Session
+  // --------------------
+  @Get('check-session')
+  async checkCookie(
+    @Req() req: Request & { session: Session & { userId?: string } }
+  ) {
+    const loggedIn = !!req.session.userId;
+    this.logger.log(`[UsersController] Check-cookie: loggedIn=${loggedIn}`);
+    return { loggedIn };
+  }
+
+  // --------------------
+  // Get current user
   // --------------------
   @Get('me')
-  async getUserData(@Res({ passthrough: true }) res: Response): Promise<GetUserDto> {
-    const userId = res.req.cookies['userId'];
-    if (!userId) throw new UnauthorizedException('Not logged in');
+  async getUserData(
+    @Req() req: Request & { session: Session & { userId?: string } }
+  ) {
+    const userId = req.session.userId;
+    if (!userId) {
+      this.logger.warn('[UsersController] getUserData: Not logged in');
+      throw new UnauthorizedException('Not logged in');
+    }
 
     const user = await this.usersService.findById(userId);
-    if (!user) throw new UnauthorizedException('User not found');
+    if (!user) {
+      this.logger.warn(`[UsersController] getUserData: User not found for ID: ${userId}`);
+      throw new UnauthorizedException('User not found');
+    }
 
-    return user; // Already a GetUserDto, Passwort nicht enthalten
+    this.logger.log(`[UsersController] getUserData: Returning user ${user.email}`);
+    return user;
   }
 }

@@ -2,124 +2,187 @@ import { Injectable } from '@nestjs/common';
 import * as sqlite3 from 'sqlite3';
 import * as bcrypt from 'bcrypt';
 import { UserEntity, CreateUserDto, GetUserDto } from './entities/users.dto';
+import { UserLogger } from '../logger/user-logger.service';
 
 @Injectable()
 export class UsersService {
   private db: sqlite3.Database;
 
-  constructor() {
+  constructor(private readonly logger: UserLogger) {
     this.db = new sqlite3.Database('database.db', (err) => {
-      if (err) console.error('SQLite Error:', err.message);
-      else console.log('Connected to SQLite DB.');
+      if (err) {
+        console.error('SQLite Error:', err.message);
+        this.logger.error(`[UsersService] SQLite connection error: ${err.message}`);
+      } else {
+        console.log('Connected to SQLite DB.');
+        this.logger.log('[UsersService] Connected to SQLite DB');
+      }
     });
 
+    // Tabelle erstellen (nur die wichtigsten Felder, Rest optional)
     this.db.run(`
       CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
+        firstname TEXT,
+        hNumber TEXT,
+        street TEXT,
+        town TEXT,
+        pCode TEXT,
+        country TEXT,
         email TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL,
         isAdmin BOOLEAN NOT NULL
       )
-    `);
+    `, (err) => {
+      if (err) this.logger.error(`[UsersService] Error creating table: ${err.message}`);
+      else this.logger.log('[UsersService] Users table ensured');
+    });
+
+    this.logger.log("[UsersService] Initialize Database");
   }
 
   // User erstellen mit Passwort-Hash
   async create(createUserDto: CreateUserDto): Promise<GetUserDto> {
-    // Passwort hashen
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10); // SaltRounds = 10
+    this.logger.log(`[UsersService] User creation started for email: ${createUserDto.email}`);
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     const user = new UserEntity({ ...createUserDto, password: hashedPassword });
 
     return new Promise((resolve, reject) => {
       this.db.run(
-        `INSERT INTO users(id, name, email, password, isAdmin) VALUES(?, ?, ?, ?, ?)`,
-        [user.id, user.name, user.email, user.password, user.isAdmin ? 1 : 0],
+        `INSERT INTO users(
+          id, name, firstname, hNumber, street, town, pCode, country, email, password, isAdmin
+        ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          user.id,
+          user.name,
+          user.firstname,
+          user.hNumber,
+          user.street,
+          user.town,
+          user.pCode,
+          user.country,
+          user.email,
+          user.password,
+          user.isAdmin ? 1 : 0
+        ],
         (err) => {
-          if (err) reject(err);
-          else resolve(new GetUserDto(user)); // Passwort nicht zurückgeben
+          if (err) {
+            this.logger.error(`[UsersService] Error inserting user ${user.email}: ${err.message}`, err.stack);
+            reject(err);
+          } else {
+            this.logger.log(`[UsersService] User created successfully: ${user.email}`);
+            resolve(
+              new GetUserDto({
+                id: user.id,
+                name: user.name,
+                firstname: user.firstname,
+                hNumber: user.hNumber,
+                street: user.street,
+                town: user.town,
+                pCode: user.pCode,
+                country: user.country,
+                email: user.email,
+                isAdmin: user.isAdmin
+              })
+            );
+          }
         }
       );
     });
   }
 
-  // Alle User abrufen
-  async findAll(): Promise<GetUserDto[]> {
+  // findById
+  async findById(id: string): Promise<GetUserDto | null> {
+    this.logger.log(`[UsersService] Fetching user by ID: ${id}`);
     return new Promise((resolve, reject) => {
-      this.db.all(`SELECT * FROM users`, [], (err, rows: any[]) => {
-        if (err) reject(err);
-        else {
-          const users = rows.map(
-            (row) =>
-              new GetUserDto({
-                id: row.id,
-                name: row.name,
-                email: row.email,
-                isAdmin: row.isAdmin, // 0/1 → boolean
-              }),
-          );
-          resolve(users);
+      this.db.get(`SELECT * FROM users WHERE id = ?`, [id], (err, row: any) => {
+        if (err) {
+          this.logger.error(`[UsersService] Error fetching user by ID ${id}: ${err.message}`);
+          return reject(err);
         }
+        if (!row) {
+          this.logger.warn(`[UsersService] No user found with ID: ${id}`);
+          return resolve(null);
+        }
+
+        const userDto = new GetUserDto({
+          id: row.id,
+          name: row.name,
+          firstname: row.firstname,
+          hNumber: row.hNumber,
+          street: row.street,
+          town: row.town,
+          pCode: row.pCode,
+          country: row.country,
+          email: row.email,
+          isAdmin: !!row.isAdmin
+        });
+
+        this.logger.log(`[UsersService] User found: ${userDto.email}`);
+        resolve(userDto);
       });
     });
   }
 
-
-async findById(id: string): Promise<GetUserDto | null> {
-  return new Promise((resolve, reject) => {
-    // Nur die Felder auswählen, die GetUserDto hat
-    this.db.get(
-      `SELECT id, name, email, isAdmin FROM users WHERE id = ?`,
-      [id],
-      (err, row) => {
-        if (err) return reject(err);
-        if (!row) return resolve(null);
-
-        // row direkt als GetUserDto casten
-        const userRow = row as GetUserDto;
-
-        resolve(userRow);
-      }
-    );
-  });
-}
-
-  async validateUser(email: string, plainPassword: string): Promise<string | null> {
-  return new Promise((resolve, reject) => {
-    console.log('--- LOGIN ATTEMPT ---');
-    console.log('Email:', email);
-    console.log('Password (incoming):', plainPassword);
-
-    // Typ definieren, dass row id und password hat
-    type UserRow = { id: string; password: string };
-
-    this.db.get(
-      `SELECT id, password FROM users WHERE email = ?`,
-      [email],
-      async (err, row) => {
+  // findAll
+  async findAll(): Promise<GetUserDto[]> {
+    this.logger.log('[UsersService] Fetching all users');
+    return new Promise((resolve, reject) => {
+      this.db.all(`SELECT * FROM users`, [], (err, rows: any[]) => {
         if (err) {
-          console.log('DB ERROR:', err);
+          this.logger.error(`[UsersService] Error fetching all users: ${err.message}`);
           return reject(err);
         }
 
-        const userRow = row as UserRow | undefined;
+        const users = rows.map((row) => new GetUserDto({
+          id: row.id,
+          name: row.name,
+          firstname: row.firstname,
+          hNumber: row.hNumber,
+          street: row.street,
+          town: row.town,
+          pCode: row.pCode,
+          country: row.country,
+          email: row.email,
+          isAdmin: !!row.isAdmin
+        }));
 
-        // Wenn kein User oder Passwort stimmt nicht → gleiche Fehlermeldung
-        if (!userRow) {
-          console.log('INVALID CREDENTIALS');
-          return resolve(null);
+        this.logger.log(`[UsersService] Total users fetched: ${users.length}`);
+        resolve(users);
+      });
+    });
+  }
+
+  // validateUser
+  async validateUser(email: string, plainPassword: string): Promise<string | null> {
+    this.logger.log(`[UsersService] Validating user login for email: ${email}`);
+    return new Promise((resolve, reject) => {
+      this.db.get(
+        `SELECT id, password FROM users WHERE email = ?`,
+        [email],
+        async (err, row: any) => {
+          if (err) {
+            this.logger.error(`[UsersService] Error validating user ${email}: ${err.message}`);
+            return reject(err);
+          }
+          if (!row) {
+            this.logger.warn(`[UsersService] No user found with email: ${email}`);
+            return resolve(null);
+          }
+
+          const userRow = row as { id: string; password: string };
+          const isMatch = await bcrypt.compare(plainPassword, userRow.password);
+
+          if (isMatch) {
+            this.logger.log(`[UsersService] User validated successfully: ${email}`);
+            resolve(userRow.id);
+          } else {
+            this.logger.warn(`[UsersService] Invalid password for user: ${email}`);
+            resolve(null);
+          }
         }
-
-        const isMatch = await bcrypt.compare(plainPassword, userRow.password);
-
-        if (!isMatch) {
-          console.log('INVALID CREDENTIALS');
-          return resolve(null);
-        }
-
-        console.log('LOGIN SUCCESS, USER ID:', userRow.id);
-        resolve(userRow.id);
-      }
-    );
-  });
-}
+      );
+    });
+  }
 }
