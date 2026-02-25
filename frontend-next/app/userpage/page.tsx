@@ -41,47 +41,62 @@ export default function ProfilePage() {
     fetchUser();
   }, []);
 
-  if (error) {
-    return (
-      <Box sx={{ padding: 4 }}>
-        <h1>Fehler</h1>
-        <p>{error}</p>
-        <LogoutButton />
-      </Box>
-    );
-  }
-
-  if (!user) {
-    return (
-      <Box sx={{ padding: 4 }}>
-        <h1>Lädt...</h1>
-      </Box>
-    );
-  }
+  // Bild abhängig von Fehler oder normalem Zustand auswählen
+  const headerImage = error
+  ? "/images/pb-error.png"
+  : "/images/pb-success.png";
 
   return (
-    <Box sx={{ padding: 4, maxWidth: 400, margin: "0 auto" }}>
-      
-    <h1>
-    Hallo {user.name} <EmojiPeopleIcon sx={{ verticalAlign: 'middle', ml: 2 }} />
-    </h1>
+    <Box>
+      {/* Header-Bild über die gesamte Breite */}
+      <Box
+        sx={{
+            width: "100%",          // volle Breite des Containers
+            maxWidth: 1600,          // maximale Breite des Bildes
+            margin: "0 auto",       // zentriert horizontal
+            height: 250,
+            backgroundImage: `url("${headerImage}")`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            borderRadius: 0,        // optional: abgerundete Ecken
+        }}
+      />
 
-      {/* Admin / User Icon */}
-      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-        {user.isAdmin ? (
-          <AdminPanelSettingsIcon color="error" sx={{ mr: 1 }} />
+      {/* Content-Container */}
+      <Box sx={{ padding: 4, maxWidth: 400, margin: "0 auto" }}>
+        {error ? (
+          <>
+            <h1>Fehler</h1>
+            <p>{error}</p>
+            <LogoutButton />
+          </>
+        ) : !user ? (
+          <h1>Lädt...</h1>
         ) : (
-          <PersonIcon color="primary" sx={{ mr: 1 }} />
+          <>
+            <h1>
+              Hallo {user.name} <EmojiPeopleIcon sx={{ verticalAlign: 'middle', ml: 2, fontSize: 40 }} />
+            </h1>
+
+            {/* Admin / User Icon */}
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+              {user.isAdmin ? (
+                <AdminPanelSettingsIcon color="error" sx={{ mr: 1 }} />
+              ) : (
+                <PersonIcon color="primary" sx={{ mr: 1 }} />
+              )}
+              <span>{user.isAdmin ? "ADMIN" : "USER"}</span>
+            </Box>
+
+            {/* User Details */}
+            <p><strong>Email:</strong> {user.email}</p>
+            <p><strong>UserID:</strong> {user.id}</p>
+
+            {/* Logout */}
+            <LogoutButton />
+          </>
         )}
-        <span>{user.isAdmin ? "ADMIN" : "USER"}</span>
       </Box>
-
-      {/* User Details */}
-      <p><strong>Email:</strong> {user.email}</p>
-      <p><strong>UserID:</strong> {user.id}</p>
-
-      {/* Logout */}
-      <LogoutButton />
     </Box>
   );
 }
