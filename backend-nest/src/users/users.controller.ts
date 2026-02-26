@@ -163,18 +163,24 @@ async updatePassword(
   return { message: 'Password updated successfully' };
 }
 
-  // --------------------
+// --------------------
 // Update UserRole
 // --------------------
 @Patch('updateUserRole')
 @UseGuards(AdminGuard)
 async updateUserRole(
+  @CurrentUserId() userId: string,
   @Body() body: UpdateUserRoleDto,
   @Req() req: Request & { session: Session & { userId?: string } }
 ) {
   if (!body.userId) {
     this.logger.error('[UsersController] updateUserRole: no userId in the request');
     throw new BadRequestException('Problem with the userId');
+  }
+
+  if(body.userId == userId) {
+    this.logger.error('[UsersController] updateUserRole: Action on Same Acc');
+    throw new BadRequestException('You cannot change the Role on your Own Acc');
   }
 
   const success = await this.usersService.updateUserRole(
@@ -230,4 +236,18 @@ async updateUserData(
 
   return { message: 'UserData updated successfully' };
 }
+
+@Get('allUsers')
+  @UseGuards(AdminGuard)
+  async findAll(): Promise<GetUserDto[]> {
+    this.logger.log('[UsersController] findAll: Admin requested all users');
+    try {
+      const users = await this.usersService.findAll();
+      this.logger.log(`[UsersController] findAll: Returning ${users.length} users`);
+      return users;
+    } catch (err: any) {
+      this.logger.error(`[UsersController] findAll: Error fetching users: ${err.message}`);
+      throw err;
+    }
+  }
 }

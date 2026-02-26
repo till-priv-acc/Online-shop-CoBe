@@ -5,6 +5,7 @@ import useSWR from "swr";
 import LogoutButton from "../../components/LogoutButton";
 import PasswordChangeButtonModal from "@/components/PasswordChangeModal";
 import UpdateUserDataModal from "@/components/UpdateUserDataModal";
+import AdminUserTable from "@/components/AdminUserTable";
 import { Box, Typography, Divider, CircularProgress } from "@mui/material";
 import { api } from "../../lib/api";
 import { UserAcc } from "@/constants";
@@ -69,115 +70,124 @@ export default function ProfilePage() {
       )}
 
       {user && (
-        <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 6 }}>
-          {/* Linke Box */}
-          <Box
-            sx={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              p: 4,
-              borderRadius: 3,
-              background: "linear-gradient(135deg, #f9f9f9, #e8e8e8)",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-              minWidth: 300,
-            }}
-          >
-            {/* Profilbild */}
-            <Box
-              component="img"
-              src={user.isAdmin ? "/images/admin-profile.png" : "/images/user-profile.png"}
-              alt="Profilbild"
-              sx={{
-                width: 140,
-                height: 140,
-                borderRadius: "50%",
-                mb: 4,
-                boxShadow: "0 4px 10px rgba(0,0,0,0.25)",
-              }}
-            />
-
-            {/* Allgemeine Infos */}
-            <Box sx={{ width: "100%", mb: 4, background: "#fff", p: 3, borderRadius: 2, boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
-              <Typography variant="h6" mb={2} sx={{ borderBottom: "1px solid #eee", pb: 1 }}>
-                Allgemeine Infos
-              </Typography>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-                <Typography variant="body2" color="text.secondary">Name:</Typography>
-                <Typography variant="body1" fontWeight={600}>{user.firstname} {user.name}</Typography>
-
-                <Typography variant="body2" color="text.secondary">Email:</Typography>
-                <Typography variant="body1" fontWeight={600}>{user.email}</Typography>
-
-                <Typography variant="body2" color="text.secondary">UserID:</Typography>
-                <Typography variant="body1" fontWeight={600} sx={{ wordBreak: "break-all", color: "#119a21" }}>
-                  {user.id}
-                </Typography>
-
-                <Typography variant="body2" color="text.secondary">Rolle:</Typography>
-                <Typography variant="body1" fontWeight={600}>{user.isAdmin ? "ADMIN" : "USER"}</Typography>
-              </Box>
-            </Box>
-
-            {/* Adresse */}
-            <Box sx={{ width: "100%", mb: 4, background: "#fff", p: 3, borderRadius: 2, boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
-              <Typography variant="h6" mb={2} sx={{ borderBottom: "1px solid #eee", pb: 1 }}>Adresse</Typography>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-                <Typography variant="body1" fontWeight={600}>{user.street} {user.hNumber}</Typography>
-                <Typography variant="body1" fontWeight={600}>{user.pCode} {user.town}</Typography>
-                <Typography variant="body1" fontWeight={600}>{user.country}</Typography>
-              </Box>
-            </Box>
-
-            <Box sx={{ mt: "auto", display: "flex", flexDirection: "column", gap: 2 }}>
-              <LogoutButton />
-              <PasswordChangeButtonModal />
-              <UpdateUserDataModal 
-                initialData={user!} 
-                onSuccess={() => mutate()} 
-              />
-            </Box>
-          </Box>
-
-          {/* Rechte Box */}
-          <Box
-            sx={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              gap: 3,
-              p: 4,
-              borderRadius: 3,
-              background: "#fff",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-              minWidth: 300,
-            }}
-          >
-            <Typography variant="h6">Rechnungen</Typography>
-            <Divider sx={{ mb: 2 }} />
-
-            {invoices.map((inv) => (
+        <Box>
+          <Box>
+            <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 6 }}>
+              {/* Linke Box */}
               <Box
-                key={inv.id}
                 sx={{
-                  p: 3,
-                  borderRadius: 2,
-                  border: "1px solid #ddd",
-                  background: "#fafafa",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
-                  transition: "0.2s",
-                  "&:hover": { boxShadow: "0 4px 12px rgba(0,0,0,0.1)" },
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  p: 4,
+                  borderRadius: 3,
+                  background: "linear-gradient(135deg, #f9f9f9, #e8e8e8)",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                  minWidth: 300,
                 }}
               >
-                <Typography variant="subtitle1" fontWeight={600}><strong>Rechnungsnr:</strong> {inv.number}</Typography>
-                <Typography variant="body1" color="primary"><strong>Betrag:</strong> {inv.amount}</Typography>
-              </Box>
-            ))}
+                {/* Profilbild */}
+                <Box
+                  component="img"
+                  src={user.isAdmin ? "/images/admin-profile.png" : "/images/user-profile.png"}
+                  alt="Profilbild"
+                  sx={{
+                    width: 140,
+                    height: 140,
+                    borderRadius: "50%",
+                    mb: 4,
+                    boxShadow: "0 4px 10px rgba(0,0,0,0.25)",
+                  }}
+                />
 
-            <Divider sx={{ mt: 2 }} />
-            <Typography>Weitere pro forma Einträge...</Typography>
+                {/* Allgemeine Infos */}
+                <Box sx={{ width: "100%", mb: 4, background: "#fff", p: 3, borderRadius: 2, boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
+                  <Typography variant="h6" mb={2} sx={{ borderBottom: "1px solid #eee", pb: 1 }}>
+                    Allgemeine Infos
+                  </Typography>
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                    <Typography variant="body2" color="text.secondary">Name:</Typography>
+                    <Typography variant="body1" fontWeight={600}>{user.firstname} {user.name}</Typography>
+
+                    <Typography variant="body2" color="text.secondary">Email:</Typography>
+                    <Typography variant="body1" fontWeight={600}>{user.email}</Typography>
+
+                    <Typography variant="body2" color="text.secondary">UserID:</Typography>
+                    <Typography variant="body1" fontWeight={600} sx={{ wordBreak: "break-all", color: "#119a21" }}>
+                      {user.id}
+                    </Typography>
+
+                    <Typography variant="body2" color="text.secondary">Rolle:</Typography>
+                    <Typography variant="body1" fontWeight={600}>{user.isAdmin ? "ADMIN" : "USER"}</Typography>
+                  </Box>
+                </Box>
+
+                {/* Adresse */}
+                <Box sx={{ width: "100%", mb: 4, background: "#fff", p: 3, borderRadius: 2, boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
+                  <Typography variant="h6" mb={2} sx={{ borderBottom: "1px solid #eee", pb: 1 }}>Adresse</Typography>
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                    <Typography variant="body1" fontWeight={600}>{user.street} {user.hNumber}</Typography>
+                    <Typography variant="body1" fontWeight={600}>{user.pCode} {user.town}</Typography>
+                    <Typography variant="body1" fontWeight={600}>{user.country}</Typography>
+                  </Box>
+                </Box>
+
+                <Box sx={{ mt: "auto", display: "flex", flexDirection: "column", gap: 2 }}>
+                  <LogoutButton />
+                  <PasswordChangeButtonModal />
+                  <UpdateUserDataModal 
+                    initialData={user!} 
+                    onSuccess={() => mutate()} 
+                  />
+                </Box>
+              </Box>
+
+              {/* Rechte Box */}
+              <Box
+                sx={{
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 3,
+                  p: 4,
+                  borderRadius: 3,
+                  background: "#fff",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  minWidth: 300,
+                }}
+              >
+                <Typography variant="h6">Rechnungen</Typography>
+                <Divider sx={{ mb: 2 }} />
+
+                {invoices.map((inv) => (
+                  <Box
+                    key={inv.id}
+                    sx={{
+                      p: 3,
+                      borderRadius: 2,
+                      border: "1px solid #ddd",
+                      background: "#fafafa",
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+                      transition: "0.2s",
+                      "&:hover": { boxShadow: "0 4px 12px rgba(0,0,0,0.1)" },
+                    }}
+                  >
+                    <Typography variant="subtitle1" fontWeight={600}><strong>Rechnungsnr:</strong> {inv.number}</Typography>
+                    <Typography variant="body1" color="primary"><strong>Betrag:</strong> {inv.amount}</Typography>
+                  </Box>
+                ))}
+
+                <Divider sx={{ mt: 2 }} />
+                <Typography>Weitere pro forma Einträge...</Typography>
+              </Box>
+            </Box>
           </Box>
+          {user.isAdmin && (
+            <Box sx={{ mt: 4 }}>  {/* Abstand nach oben */}
+              <AdminUserTable />
+            </Box>
+          )}
         </Box>
       )}
     </Box>
