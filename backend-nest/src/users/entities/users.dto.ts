@@ -37,6 +37,21 @@ export class CreateUserDto {
   }
 }
 
+// DTO für Create User Request
+export class UpdateUserDto {
+  name!: string;
+  firstname!: string;
+  hNumber!: string;
+  street!: string;
+  town!: string;
+  pCode!: string;
+  country!: string;
+
+  constructor(partial: Partial<UpdateUserDto>) {
+    Object.assign(this, partial);
+  }
+}
+
 // DTO für Get User Response
 export class GetUserDto {
   id!: string;
@@ -58,4 +73,9 @@ export class GetUserDto {
 export class UpdatePasswordDto {
   currentPassword!: string;
   newPassword!: string;
+}
+
+export class UpdateUserRoleDto {
+  userId!: string;
+  isAdmin!: Boolean;
 }

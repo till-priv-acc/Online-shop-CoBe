@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import LogoutButton from "../../components/LogoutButton";
 import PasswordChangeButtonModal from "@/components/PasswordChangeModal";
+import UpdateUserDataModal from "@/components/UpdateUserDataModal";
 import { Box, Typography, Divider } from "@mui/material";
 import { api } from "../../lib/api";
 
@@ -150,6 +151,7 @@ export default function ProfilePage() {
             <Box sx={{ mt: "auto" }}>
                 <LogoutButton />
                 <PasswordChangeButtonModal />
+                <UpdateUserDataModal /> 
             </Box>
             </Box>
 

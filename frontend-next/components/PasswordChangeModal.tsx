@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { api } from "../lib/api";
 import {
   Button,
   Dialog,
@@ -24,23 +25,18 @@ export default function PasswordChangeButtonModal() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/users/password", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ currentPassword, newPassword }),
+      await api.patch("/users/updatePassword", {
+        currentPassword,
+        newPassword,
       });
-
-      if (!res.ok) {
-        throw new Error();
-      }
 
       // Reset + schließen
       setCurrentPassword("");
       setNewPassword("");
       setOpen(false);
-    } catch {
-      setError("Passwort konnte nicht geändert werden.");
+
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Passwort konnte nicht geändert werden.");
     } finally {
       setLoading(false);
     }

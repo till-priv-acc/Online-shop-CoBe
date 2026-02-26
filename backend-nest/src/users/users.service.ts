@@ -1,7 +1,7 @@
 import { Injectable, Session } from '@nestjs/common';
 import * as sqlite3 from 'sqlite3';
 import * as bcrypt from 'bcrypt';
-import { UserEntity, CreateUserDto, GetUserDto } from './entities/users.dto';
+import { UserEntity, CreateUserDto, GetUserDto, UpdateUserDto } from './entities/users.dto';
 import { UserLogger } from '../logger/user-logger.service';
 
 @Injectable()
@@ -92,6 +92,56 @@ export class UsersService {
     });
   }
 
+async updateUser(userId: string,updateUserDto: UpdateUserDto): Promise<boolean> {
+  this.logger.log(`[UsersService] User update started for userId: ${userId}`);
+
+  const user = new UserEntity({ ...updateUserDto });
+
+  return new Promise((resolve, reject) => {
+    const sql = `
+      UPDATE users SET
+        name = ?,
+        firstname = ?,
+        hNumber = ?,
+        street = ?,
+        town = ?,
+        pCode = ?,
+        country = ?
+      WHERE id = ?
+    `;
+
+    const params = [
+      user.name,
+      user.firstname,
+      user.hNumber,
+      user.street,
+      user.town,
+      user.pCode,
+      user.country,
+      userId
+    ];
+
+    this.db.run(sql, params, (err: Error | null) => {
+      if (err) {
+        this.logger.error(
+          `[UsersService] Error updating user ${user.id}: ${err.message}`,
+          err.stack
+        );
+        return reject(err);
+      }
+
+      // @ts-ignore: sqlite3 sets `this.changes` in the callback
+      if (this.changes === 0) {
+        this.logger.log(`[UsersService] No user found with id: ${user.id}`);
+        return resolve(false);
+      }
+
+      this.logger.log(`[UsersService] User updated successfully: ${user.id}`);
+      resolve(true);
+    });
+  });
+}
+
   // findById
   async findById(id: string): Promise<GetUserDto | null> {
     this.logger.log(`[UsersService] Fetching user by ID: ${id}`);
@@ -154,7 +204,7 @@ export class UsersService {
     });
   }
 
-  // updatePassword
+// updatePassword
 async updatePassword(
   userId: string,
   currentPlainPassword: string,
@@ -207,6 +257,32 @@ async updatePassword(
             resolve(this.changes > 0);
           }
         );
+      }
+    );
+  });
+}
+
+async updateUserRole(
+  userId: string,
+  userRole: Boolean
+): Promise<boolean> {
+  this.logger.log(`[UsersService] Updating role for userId: ${userId}`);
+
+  return new Promise((resolve, reject) => {
+    const isAdmin = !!userRole; // Sicherstellen, dass Boolean
+
+    this.db.run(
+      `UPDATE users SET isAdmin = ? WHERE id = ?`,
+      [isAdmin, userId],
+      function (err) {
+        if (err) {
+          console.error(`[UsersService] Error updating role for userId ${userId}:`, err);
+          reject(err);
+          return;
+        }
+
+        console.log(`[UsersService] Role updated for userId ${userId}, changes: ${this.changes}`);
+        resolve(this.changes > 0);
       }
     );
   });
