@@ -96,7 +96,7 @@ export class UsersController {
   // Check Session
   // --------------------
   @Get('check-session')
-  async checkCookie(
+  async checkSession(
     @Req() req: Request & { session: Session & { userId?: string } }
   ) {
     const loggedIn = !!req.session.userId;

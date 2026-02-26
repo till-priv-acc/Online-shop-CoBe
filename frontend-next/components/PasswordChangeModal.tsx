@@ -18,10 +18,12 @@ export default function PasswordChangeButtonModal() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null); // neuer State
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
     setError(null);
+    setSuccess(null); // reset
     setLoading(true);
 
     try {
@@ -30,10 +32,15 @@ export default function PasswordChangeButtonModal() {
         newPassword,
       });
 
-      // Reset + schließen
+      // Passwort erfolgreich geändert
+      setSuccess("Passwort wurde erfolgreich geändert!");
+
+      // Reset Felder
       setCurrentPassword("");
       setNewPassword("");
-      setOpen(false);
+
+      // Optional: Modal schließen nach kurzer Zeit
+      setTimeout(() => setOpen(false), 1500);
 
     } catch (err: any) {
       setError(err.response?.data?.message || "Passwort konnte nicht geändert werden.");
@@ -56,6 +63,7 @@ export default function PasswordChangeButtonModal() {
         <DialogContent>
           <Stack spacing={2} mt={1}>
             {error && <Alert severity="error">{error}</Alert>}
+            {success && <Alert severity="success">{success}</Alert>}
 
             <TextField
               label="Aktuelles Passwort"
