@@ -54,3 +54,8 @@ export class GetUserDto {
     Object.assign(this, partial);
   }
 }
+
+export class UpdatePasswordDto {
+  currentPassword!: string;
+  newPassword!: string;
+}

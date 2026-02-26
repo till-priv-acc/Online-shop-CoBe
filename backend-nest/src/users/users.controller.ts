@@ -1,7 +1,7 @@
-import { Controller, Get, Post, Body, Res, Req, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Res, Req, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { UsersService } from './users.service';
-import { CreateUserDto, GetUserDto } from './entities/users.dto';
+import { CreateUserDto, GetUserDto, UpdatePasswordDto } from './entities/users.dto';
 import { UserLogger } from '../logger/user-logger.service';
 import type { Session } from 'express-session';
 
@@ -123,4 +123,39 @@ export class UsersController {
     this.logger.log(`[UsersController] getUserData: Returning user ${user.email}`);
     return user;
   }
+
+  // --------------------
+// Update password
+// --------------------
+@Patch('password')
+async updatePassword(
+  @Body() body: UpdatePasswordDto,
+  @Req() req: Request & { session: Session & { userId?: string } }
+) {
+  const userId = req.session.userId;
+
+  if (!userId) {
+    this.logger.warn('[UsersController] updatePassword: Not logged in');
+    throw new UnauthorizedException('Not logged in');
+  }
+
+  const success = await this.usersService.updatePassword(
+    userId,
+    body.currentPassword,
+    body.newPassword
+  );
+
+  if (!success) {
+    this.logger.warn(
+      `[UsersController] updatePassword: Invalid current password for userId ${userId}`
+    );
+    throw new BadRequestException('Current password is incorrect');
+  }
+
+  this.logger.log(
+    `[UsersController] updatePassword: Password updated for userId ${userId}`
+  );
+
+  return { message: 'Password updated successfully' };
+}
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Session } from '@nestjs/common';
 import * as sqlite3 from 'sqlite3';
 import * as bcrypt from 'bcrypt';
 import { UserEntity, CreateUserDto, GetUserDto } from './entities/users.dto';
@@ -154,6 +154,64 @@ export class UsersService {
     });
   }
 
+  // updatePassword
+async updatePassword(
+  userId: string,
+  currentPlainPassword: string,
+  newPlainPassword: string
+): Promise<boolean> {
+  this.logger.log(`[UsersService] Updating password for userId: ${userId}`);
+
+  return new Promise((resolve, reject) => {
+    this.db.get(
+      `SELECT password FROM users WHERE id = ?`,
+      [userId],
+      async (err, row: any) => {
+        if (err) {
+          this.logger.error(
+            `[UsersService] Error fetching user ${userId}: ${err.message}`
+          );
+          return reject(err);
+        }
+
+        if (!row) {
+          this.logger.warn(
+            `[UsersService] No user found with id: ${userId}`
+          );
+          return resolve(false);
+        }
+
+        const isMatch = await this.validatePassword(
+          currentPlainPassword,
+          row.password
+        );
+
+        if (!isMatch) {
+          this.logger.warn(
+            `[UsersService] Invalid current password for userId: ${userId}`
+          );
+          return resolve(false);
+        }
+
+        const hashedPassword = await bcrypt.hash(newPlainPassword, 10);
+
+        this.db.run(
+          `UPDATE users SET password = ? WHERE id = ?`,
+          [hashedPassword, userId],
+          function (updateErr) {
+            if (updateErr) {
+              reject(updateErr);
+              return;
+            }
+
+            resolve(this.changes > 0);
+          }
+        );
+      }
+    );
+  });
+}
+
   // validateUser
   async validateUser(email: string, plainPassword: string): Promise<string | null> {
     this.logger.log(`[UsersService] Validating user login for email: ${email}`);
@@ -172,7 +230,7 @@ export class UsersService {
           }
 
           const userRow = row as { id: string; password: string };
-          const isMatch = await bcrypt.compare(plainPassword, userRow.password);
+          const isMatch = await this.validatePassword(plainPassword, userRow.password);
 
           if (isMatch) {
             this.logger.log(`[UsersService] User validated successfully: ${email}`);
@@ -184,5 +242,9 @@ export class UsersService {
         }
       );
     });
+  }
+
+  async validatePassword(pwdFrontend: string, pwdDB: string) {
+        return bcrypt.compare(pwdFrontend, pwdDB);
   }
 }
