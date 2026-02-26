@@ -172,9 +172,8 @@ async updateUserRole(
   @Body() body: UpdateUserRoleDto,
   @Req() req: Request & { session: Session & { userId?: string } }
 ) {
-
   if (!body.userId) {
-    this.logger.error('[UsersController] updateUserRole: no userId in the Request');
+    this.logger.error('[UsersController] updateUserRole: no userId in the request');
     throw new BadRequestException('Problem with the userId');
   }
 
@@ -185,13 +184,13 @@ async updateUserRole(
 
   if (!success) {
     this.logger.warn(
-      `[UsersController] updateUserRole: update UserRole not worked ${body.userId}`
+      `[UsersController] updateUserRole: update UserRole failed for userId ${body.userId}`
     );
-    throw new BadRequestException('Problems with upadte USerRole');
+    throw new BadRequestException('Problem with updating UserRole');
   }
 
   this.logger.log(
-    `[UsersController] updateUserRole: Password updated for userId ${body.userId}`
+    `[UsersController] updateUserRole: UserRole updated for userId ${body.userId}`
   );
 
   return { message: 'UserRole updated successfully' };
