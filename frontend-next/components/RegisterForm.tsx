@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { api } from "../lib/api";
+import { allCountries } from "@/constants";
 
 interface RegisterFormData {
   name: string;
@@ -63,26 +64,7 @@ export default function RegisterForm() {
     }
   };
 
-  const countries = [
-    "Deutschland",
-    "Österreich",
-    "Schweiz",
-    "Frankreich",
-    "Italien",
-    "Spanien",
-    "Niederlande",
-    "Belgien",
-    "Polen",
-    "Tschechien",
-    "USA",
-    "Kanada",
-    "Vereinigtes Königreich",
-    "Schweden",
-    "Norwegen",
-    "Dänemark",
-    "Finnland",
-    "Australien",
-  ];
+  const countries = allCountries;
 
   return (
     <Box

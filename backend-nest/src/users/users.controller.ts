@@ -1,9 +1,12 @@
-import { Controller, Get, Post, Body, Res, Req, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Res, Req, InternalServerErrorException, UnauthorizedException, BadRequestException, UseGuards  } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { UsersService } from './users.service';
-import { CreateUserDto, GetUserDto } from './entities/users.dto';
+import { CreateUserDto, GetUserDto, UpdatePasswordDto, UpdateUserRoleDto,UpdateUserDto } from './entities/users.dto';
 import { UserLogger } from '../logger/user-logger.service';
 import type { Session } from 'express-session';
+import { AuthGuard } from './guards/auth.guard';
+import { AdminGuard } from './guards/admin.guard';
+import { CurrentUserId } from './decorators/current-user-id.decorater';
 
 @Controller('users')
 export class UsersController {
@@ -93,7 +96,7 @@ export class UsersController {
   // Check Session
   // --------------------
   @Get('check-session')
-  async checkCookie(
+  async checkSession(
     @Req() req: Request & { session: Session & { userId?: string } }
   ) {
     const loggedIn = !!req.session.userId;
@@ -122,5 +125,129 @@ export class UsersController {
 
     this.logger.log(`[UsersController] getUserData: Returning user ${user.email}`);
     return user;
+  }
+
+  // --------------------
+// Update password
+// --------------------
+@Patch('updatePassword')
+@UseGuards(AuthGuard)
+async updatePassword(
+  @CurrentUserId() userId: string,
+  @Body() body: UpdatePasswordDto,
+  @Req() req: Request & { session: Session & { userId?: string } }
+) {
+
+  if (!userId) {
+    this.logger.warn('[UsersController] updatePassword: decorator has no userId found');
+    throw new InternalServerErrorException('Problem with the userId');
+  }
+
+  const success = await this.usersService.updatePassword(
+    userId,
+    body.currentPassword,
+    body.newPassword
+  );
+
+  if (!success) {
+    this.logger.warn(
+      `[UsersController] updatePassword: Invalid current password for userId ${userId}`
+    );
+    throw new BadRequestException('Current password is incorrect');
+  }
+
+  this.logger.log(
+    `[UsersController] updatePassword: Password updated for userId ${userId}`
+  );
+
+  return { message: 'Password updated successfully' };
+}
+
+// --------------------
+// Update UserRole
+// --------------------
+@Patch('updateUserRole')
+@UseGuards(AdminGuard)
+async updateUserRole(
+  @CurrentUserId() userId: string,
+  @Body() body: UpdateUserRoleDto,
+  @Req() req: Request & { session: Session & { userId?: string } }
+) {
+  if (!body.userId) {
+    this.logger.error('[UsersController] updateUserRole: no userId in the request');
+    throw new BadRequestException('Problem with the userId');
+  }
+
+  if(body.userId == userId) {
+    this.logger.error('[UsersController] updateUserRole: Action on Same Acc');
+    throw new BadRequestException('You cannot change the Role on your Own Acc');
+  }
+
+  const success = await this.usersService.updateUserRole(
+    body.userId,
+    body.isAdmin
+  );
+
+  if (!success) {
+    this.logger.warn(
+      `[UsersController] updateUserRole: update UserRole failed for userId ${body.userId}`
+    );
+    throw new BadRequestException('Problem with updating UserRole');
+  }
+
+  this.logger.log(
+    `[UsersController] updateUserRole: UserRole updated for userId ${body.userId}`
+  );
+
+  return { message: 'UserRole updated successfully' };
+}
+
+// --------------------
+// Update UserData
+// --------------------
+@Patch('updateUserData')
+@UseGuards(AuthGuard)
+async updateUserData(
+  @CurrentUserId() userId: string,
+  @Body() body: UpdateUserDto,
+  @Req() req: Request & { session: Session & { userId?: string } }
+) {
+
+  if (!userId) {
+    this.logger.warn('[UsersController] updateUserData: decorator has no userId found');
+    throw new InternalServerErrorException('Problem with the userId');
+  }
+
+  const success = await this.usersService.updateUser(
+    userId,
+    body
+  );
+
+  if (!success) {
+    this.logger.warn(
+      `[UsersController] updateUserData: Problem by updating Data from User ${userId}`
+    );
+    throw new BadRequestException('Problem with updating');
+  }
+
+  this.logger.log(
+    `[UsersController] updateUserData: UserData updated for userId ${userId}`
+  );
+
+  return { message: 'UserData updated successfully' };
+}
+
+@Get('allUsers')
+  @UseGuards(AdminGuard)
+  async findAll(): Promise<GetUserDto[]> {
+    this.logger.log('[UsersController] findAll: Admin requested all users');
+    try {
+      const users = await this.usersService.findAll();
+      this.logger.log(`[UsersController] findAll: Returning ${users.length} users`);
+      return users;
+    } catch (err: any) {
+      this.logger.error(`[UsersController] findAll: Error fetching users: ${err.message}`);
+      throw err;
+    }
   }
 }
