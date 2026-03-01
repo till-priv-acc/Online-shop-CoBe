@@ -1,0 +1,162 @@
+import { Injectable } from '@nestjs/common';
+import * as sqlite3 from 'sqlite3';
+import { ProductEntity, PictureEntity, CreateCallDTO, PictureCallDto, AllProducts } from './dto/products.dto';
+import { ProductLogger } from '../logger/product-logger.service';
+import { v4 as uuidv4 } from 'uuid';
+
+@Injectable()
+export class ProductsService {
+  private db: sqlite3.Database;
+
+  constructor(private readonly logger: ProductLogger) {
+    this.db = new sqlite3.Database('database.db', (err) => {
+      if (err) {
+        this.logger.error(`[ProductsService] SQLite connection error: ${err.message}`, err.stack);
+      } else {
+        this.logger.log('[ProductsService] Connected to SQLite DB');
+      }
+    });
+
+    // Tabelle erstellen
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS products (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT,
+        crowd INTEGER,
+        minCrowd INTEGER,
+        price REAL,
+        deliverable INTEGER,
+        deliverableAbroad INTEGER,
+        material TEXT,
+        color TEXT,
+        category TEXT,
+        isAvailible BOOLEAN NOT NULL,
+        createFrom TEXT NOT NULL
+        );
+    `, (err) => {
+      if (err) this.logger.error(`[ProductsService] Error creating products table: ${err.message}`);
+      else this.logger.log('[ProductsService] Products table ensured');
+    });
+
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS pictures (
+        id TEXT PRIMARY KEY,
+        fileName TEXT NOT NULL,
+        productId TEXT NOT NULL
+        );
+    `, (err) => {
+      if (err) this.logger.error(`[ProductsService] Error creating pictures table: ${err.message}`);
+      else this.logger.log('[ProductsService] Pictures table ensured');
+    });
+  }
+
+  async createProduct(createDto: CreateCallDTO, userId: string): Promise<ProductEntity> {
+    return new Promise((resolve, reject) => {
+      const product: ProductEntity = {
+        id: uuidv4(),
+        ...createDto,
+        createFrom: userId,
+        isAvailible: true,
+      };
+
+      // Produkt speichern
+      this.db.run(`
+        INSERT INTO products (
+          id, name, description, crowd, minCrowd, price,
+          deliverable, deliverableAbroad, material, color,
+          category, isAvailible, createFrom
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [
+        product.id, product.name, product.description, product.crowd, product.minCrowd, product.price,
+        product.deliverable, product.deliverableAbroad, product.material, product.color,
+        product.category, product.isAvailible ? 1 : 0, product.createFrom
+      ], (err) => {
+        if (err) {
+          this.logger.error(`[ProductsService] Error inserting product: ${err.message}`, err.stack);
+          return reject(err);
+        }
+        this.logger.log(`[ProductsService] Product saved: ${product.name} (ID: ${product.id})`);
+
+        // Bilder speichern
+        if (createDto.pictures && createDto.pictures.length > 0) {
+          createDto.pictures.forEach((pic: PictureCallDto) => {
+            const picture: PictureEntity = {
+              id: uuidv4(),
+              fileName: pic.fileName,
+            };
+            this.db.run(`
+              INSERT INTO pictures (id, fileName, productId) VALUES (?, ?, ?)
+            `, [picture.id, picture.fileName, product.id], (picErr) => {
+              if (picErr) {
+                this.logger.error(`[ProductsService] Error inserting picture: ${picErr.message}`, picErr.stack);
+              } else {
+                this.logger.log(`[ProductsService] Picture saved: ${picture.fileName}`);
+              }
+            });
+          });
+        }
+
+        resolve(product);
+      });
+    });
+  }
+
+  async getAllProducts(): Promise<AllProducts[]> {
+  return new Promise((resolve, reject) => {
+    this.db.all(`SELECT * FROM products`, [], (err: Error | null, rows: any[]) => {
+      if (err) {
+        this.logger.error(`[ProductsService] Error fetching products: ${err.message}`, err.stack);
+        return reject(err);
+      }
+
+      const products: AllProducts[] = [];
+      let processed = 0;
+
+      if (!rows.length) return resolve(products);
+
+      rows.forEach((row) => {
+        // Erstes Bild über productId holen
+        this.db.get(
+          `SELECT fileName FROM pictures WHERE productId = ? LIMIT 1`,
+          [row.id],
+          (picErr: Error | null, pic?: { fileName: string }) => {
+            let fileName = 'placeholder.png';
+            if (!picErr && pic && pic.fileName) {
+                fileName = pic.fileName; // nur wenn wirklich ein Bild existiert
+                } else if (picErr) {
+                this.logger.error(`[ProductsService] Error fetching picture for product ${row.id}: ${picErr.message}`);
+                }
+
+            // User Name + Firstname holen
+            this.db.get(`SELECT name, firstname FROM users WHERE id = ?`, [row.createFrom], (userErr: Error | null, userRow: any) => {
+              if (userErr || !userRow) {
+                this.logger.error(`[ProductsService] Error fetching user for product ${row.id}: ${userErr?.message}`);
+                userRow = { name: 'Unknown', firstname: '' };
+              }
+
+              const productDto = new AllProducts({
+                id: row.id,
+                name: row.name,
+                price: row.price,
+                category: row.category,
+                isAvailible: !!row.isAvailible,
+                createFrom: `${userRow.name} ${userRow.firstname}`,
+                pictures: fileName,
+              });
+
+              products.push(productDto);
+              processed++;
+
+              if (processed === rows.length) {
+                this.logger.log(`[ProductsService] Fetched ${products.length} products`);
+                resolve(products);
+              }
+            });
+          }
+        );
+      });
+    });
+  });
+}
+}
