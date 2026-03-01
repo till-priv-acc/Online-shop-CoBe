@@ -32,7 +32,7 @@ export class UsersService {
         country TEXT,
         email TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL,
-        isAdmin BOOLEAN NOT NULL
+        type TEXT NOT NULL
       )
     `, (err) => {
       if (err) this.logger.error(`[UsersService] Error creating table: ${err.message}`);
@@ -51,7 +51,7 @@ export class UsersService {
     return new Promise((resolve, reject) => {
       this.db.run(
         `INSERT INTO users(
-          id, name, firstname, hNumber, street, town, pCode, country, email, password, isAdmin
+          id, name, firstname, hNumber, street, town, pCode, country, email, password, type
         ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           user.id,
@@ -64,7 +64,7 @@ export class UsersService {
           user.country,
           user.email,
           user.password,
-          user.isAdmin ? 1 : 0
+          user.type
         ],
         (err) => {
           if (err) {
@@ -83,7 +83,7 @@ export class UsersService {
                 pCode: user.pCode,
                 country: user.country,
                 email: user.email,
-                isAdmin: user.isAdmin
+                type: user.type
               })
             );
           }
@@ -166,7 +166,7 @@ async updateUser(userId: string,updateUserDto: UpdateUserDto): Promise<boolean> 
           pCode: row.pCode,
           country: row.country,
           email: row.email,
-          isAdmin: !!row.isAdmin
+          type: row.type
         });
 
         this.logger.log(`[UsersService] User found: ${userDto.email}`);
@@ -195,7 +195,7 @@ async updateUser(userId: string,updateUserDto: UpdateUserDto): Promise<boolean> 
           pCode: row.pCode,
           country: row.country,
           email: row.email,
-          isAdmin: !!row.isAdmin
+          type: row.type
         }));
 
         this.logger.log(`[UsersService] Total users fetched: ${users.length}`);
@@ -264,16 +264,16 @@ async updatePassword(
 
 async updateUserRole(
   userId: string,
-  userRole: Boolean
+  userRole: string
 ): Promise<boolean> {
   this.logger.log(`[UsersService] Updating role for userId: ${userId}`);
 
   return new Promise((resolve, reject) => {
-    const isAdmin = !!userRole; // Sicherstellen, dass Boolean
+    const newUserRole = userRole; // Sicherstellen, dass Boolean
 
     this.db.run(
-      `UPDATE users SET isAdmin = ? WHERE id = ?`,
-      [isAdmin, userId],
+      `UPDATE users SET type = ? WHERE id = ?`,
+      [newUserRole, userId],
       function (err) {
         if (err) {
           console.error(`[UsersService] Error updating role for userId ${userId}:`, err);

@@ -11,7 +11,7 @@ export class UserEntity {
   country!: string;
   password!: string;
   email!: string;
-  isAdmin!: boolean;
+  type!: string;
 
   constructor(partial: Partial<UserEntity>) {
     Object.assign(this, partial);
@@ -30,7 +30,7 @@ export class CreateUserDto {
   country!: string;
   email!: string;
   password!: string;
-  isAdmin: boolean = false;
+  type!: string;
 
   constructor(partial: Partial<CreateUserDto>) {
     Object.assign(this, partial);
@@ -63,9 +63,16 @@ export class GetUserDto {
   pCode!: string;
   country!: string;
   email!: string;
-  isAdmin!: boolean;
+  type!: string;
 
   constructor(partial: Partial<GetUserDto>) {
+    // Default setzen, nur wenn type fehlt oder nicht string ist
+    if (partial.type == null) {
+      partial.type = 'USER';
+    } else if (typeof partial.type !== 'string') {
+      partial.type = String(partial.type); // boolean → string
+    }
+
     Object.assign(this, partial);
   }
 }
@@ -77,5 +84,5 @@ export class UpdatePasswordDto {
 
 export class UpdateUserRoleDto {
   userId!: string;
-  isAdmin!: Boolean;
+  type!: string;
 }

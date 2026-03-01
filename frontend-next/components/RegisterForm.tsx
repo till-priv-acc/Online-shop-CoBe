@@ -22,8 +22,10 @@ interface RegisterFormData {
   country: string;
   email: string;
   password: string;
-  isAdmin: boolean; // explizit drin
+  type: string; // explizit drin
 }
+
+const userTypes = ["USER", "SELLER"];
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -38,7 +40,7 @@ export default function RegisterForm() {
     country: "",
     email: "",
     password: "",
-    isAdmin: false, // <-- Standardmäßig false
+    type: "USER", // <-- Standardmäßig false
   });
 
   const [error, setError] = useState("");
@@ -181,6 +183,23 @@ export default function RegisterForm() {
           {countries.map((country) => (
             <MenuItem key={country} value={country}>
               {country}
+            </MenuItem>
+          ))}
+        </TextField>
+
+        <TextField
+          select
+          label="User Art"
+          name="type"
+          fullWidth
+          margin="normal"
+          value={formData.type}
+          onChange={handleChange}
+          required
+        >
+          {userTypes.map((type) => (
+            <MenuItem key={type} value={type}>
+              {type}
             </MenuItem>
           ))}
         </TextField>

@@ -1,5 +1,5 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException, ForbiddenException } from '@nestjs/common';
-import { UsersService } from '../users.service'; // dein Service importieren
+import { UsersService } from '../users.service';
 
 @Injectable()
 export class AdminGuard implements CanActivate {
@@ -20,7 +20,8 @@ export class AdminGuard implements CanActivate {
       throw new UnauthorizedException('User not found');
     }
 
-    if (!user.isAdmin) {
+    // Prüfung auf type "ADMIN" statt isAdmin
+    if (user.type !== 'ADMIN') {
       throw new ForbiddenException('Access denied. Admin only.');
     }
 

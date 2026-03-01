@@ -90,7 +90,7 @@ export default function ProfilePage() {
                 {/* Profilbild */}
                 <Box
                   component="img"
-                  src={user.isAdmin ? "/images/admin-profile.png" : "/images/user-profile.png"}
+                  src={`/images/${user.type}-profile.png`}
                   alt="Profilbild"
                   sx={{
                     width: 140,
@@ -119,7 +119,7 @@ export default function ProfilePage() {
                     </Typography>
 
                     <Typography variant="body2" color="text.secondary">Rolle:</Typography>
-                    <Typography variant="body1" fontWeight={600}>{user.isAdmin ? "ADMIN" : "USER"}</Typography>
+                    <Typography variant="body1" fontWeight={600}>{user.type }</Typography>
                   </Box>
                 </Box>
 
@@ -183,7 +183,7 @@ export default function ProfilePage() {
               </Box>
             </Box>
           </Box>
-          {user.isAdmin && (
+          {user.type == "ADMIN" && (
             <Box sx={{ mt: 4 }}>  {/* Abstand nach oben */}
               <AdminUserTable />
             </Box>

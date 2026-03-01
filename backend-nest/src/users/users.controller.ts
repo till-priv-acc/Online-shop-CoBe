@@ -185,7 +185,7 @@ async updateUserRole(
 
   const success = await this.usersService.updateUserRole(
     body.userId,
-    body.isAdmin
+    body.type
   );
 
   if (!success) {

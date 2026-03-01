@@ -7,8 +7,15 @@ import {
   Box, Typography, Divider, CircularProgress, Table, TableHead, TableRow, TableCell, TableBody, 
   IconButton, TextField, MenuItem, Snackbar, Alert 
 } from "@mui/material";
-import { AdminPanelSettings, Person, ArrowUpward, ArrowDownward } from "@mui/icons-material";
+import { AdminPanelSettings, Person, ArrowUpward, ArrowDownward, Store } from "@mui/icons-material";
 import { UserAcc } from "@/constants";
+
+// Mapping: type → Icon-Komponente
+const roleIcons = {
+  USER: Person,
+  ADMIN: AdminPanelSettings,
+  SELLER: Store,
+};
 
 export default function AdminUserTable() {
   const { data: users, mutate, isLoading } = useSWR<UserAcc[]>("/users/allUsers", async () => {
@@ -28,20 +35,21 @@ export default function AdminUserTable() {
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState<"success" | "error">("success");
 
-  const handleRoleToggle = async (targetUserId: string, currentIsAdmin: boolean) => {
-    try {
-      await api.patch("/users/updateUserRole", { userId: targetUserId, isAdmin: !currentIsAdmin });
-      mutate(users => users?.map(u => u.id === targetUserId ? { ...u, isAdmin: !currentIsAdmin } : u), false);
-      setAlertMessage("Rolle erfolgreich geändert!");
-      setAlertSeverity("success");
-      setAlertOpen(true);
-    } catch (err: any) {
-      console.error("Fehler beim Ändern der Rolle", err);
-      setAlertMessage(err.response?.data?.message || "Fehler beim Ändern der Rolle");
-      setAlertSeverity("error");
-      setAlertOpen(true);
-    }
-  };
+  const handleRoleChange = async (userId: string, newType: 'USER' | 'ADMIN' | 'SELLER') => {
+  try {
+    await api.patch("/users/updateUserRole", { userId, type: newType });
+    // lokal mutieren, damit die Tabelle direkt aktualisiert wird
+    mutate(users => users?.map(u => u.id === userId ? { ...u, type: newType } : u), false);
+    setAlertMessage("Rolle erfolgreich geändert!");
+    setAlertSeverity("success");
+    setAlertOpen(true);
+  } catch (err: any) {
+    console.error("Fehler beim Ändern der Rolle", err);
+    setAlertMessage(err.response?.data?.message || "Fehler beim Ändern der Rolle");
+    setAlertSeverity("error");
+    setAlertOpen(true);
+  }
+};
 
   if (isLoading) return (
     <Box sx={{ p: 4, display: "flex", justifyContent: "center", alignItems: "center" }}>
@@ -55,7 +63,7 @@ export default function AdminUserTable() {
   let displayedUsers = users ?? [];
 
   if (countryFilter) displayedUsers = displayedUsers.filter(u => u.country === countryFilter);
-  if (roleFilter) displayedUsers = displayedUsers.filter(u => roleFilter === "Admin" ? u.isAdmin : !u.isAdmin);
+  if (roleFilter) displayedUsers = displayedUsers.filter(u => u.type === roleFilter.toUpperCase());
 
   displayedUsers = [...displayedUsers].sort((a, b) => {
     let valA: string = "";
@@ -159,9 +167,22 @@ export default function AdminUserTable() {
             <TableRow key={u.id} hover sx={{ borderBottom: "1px solid #eee" }}>
               <TableCell>{u.id}</TableCell>
               <TableCell>
-                <IconButton onClick={() => handleRoleToggle(u.id, u.isAdmin)}>
-                  {u.isAdmin ? <AdminPanelSettings color="primary"/> : <Person color="action"/>}
-                </IconButton>
+                {(['USER', 'ADMIN', 'SELLER'] as const).map((role) => {
+                  const IconComp = roleIcons[role];
+                  const isActive = u.type === role;
+
+                  return (
+                    <IconButton
+                      key={role}
+                      onClick={() => handleRoleChange(u.id, role)}
+                      sx={{
+                        color: isActive ? 'success.main' : 'action.active', // grün, wenn aktiv
+                      }}
+                    >
+                      <IconComp />
+                    </IconButton>
+                  );
+                })}
               </TableCell>
               <TableCell>{u.name}, {u.firstname}</TableCell>
               <TableCell>{u.email}</TableCell>

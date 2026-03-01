@@ -41,5 +41,4 @@ yarn-error.log*
 next-env.d.ts
 
 # product images (runtime uploads)
-frontend-next/public/product-images/*
-!frontend-next/public/product-images/.gitkeep
+public/product-images/*
