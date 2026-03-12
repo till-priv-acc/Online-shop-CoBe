@@ -121,12 +121,24 @@ export class ProductsService {
           `SELECT fileName FROM pictures WHERE productId = ? LIMIT 1`,
           [row.id],
           (picErr: Error | null, pic?: { fileName: string }) => {
-            let fileName = 'placeholder.png';
-            if (!picErr && pic && pic.fileName) {
-                fileName = pic.fileName; // nur wenn wirklich ein Bild existiert
-                } else if (picErr) {
-                this.logger.error(`[ProductsService] Error fetching picture for product ${row.id}: ${picErr.message}`);
-                }
+          if (picErr) {
+            this.logger.error(`[ProductsService] Error fetching picture for product ${row.id}: ${picErr.message}`);
+            return;
+          }
+
+          // Debug: gib das Ergebnis direkt aus
+          this.logger.log(`[ProductsService] Raw picture result for product ${row.id}: ${JSON.stringify(pic)}`);
+
+          let fileName: string | undefined;
+          if (pic && pic.fileName) {
+            fileName = pic.fileName; // tatsächlicher Bildname
+          } else {
+            fileName = undefined; // kein Bild
+          }
+
+          this.logger.log(`[ProductsService] Final fileName for product ${row.id}: ${fileName}`);
+  
+  // Danach kannst du das Produkt weiterverarbeiten
 
             // User Name + Firstname holen
             this.db.get(`SELECT name, firstname FROM users WHERE id = ?`, [row.createFrom], (userErr: Error | null, userRow: any) => {

@@ -19,7 +19,7 @@ export async function POST(req: Request) {
       const buffer = Buffer.from(arrayBuffer);
 
       // Filename: z.B. timestamp + original name
-      const filename = `${Date.now()}-${file.name}`;
+      const filename = file.name;
       const filepath = path.join(uploadDir, filename);
 
       fs.writeFileSync(filepath, buffer);

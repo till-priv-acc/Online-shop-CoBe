@@ -7,13 +7,14 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { api } from "../lib/api";
 import { v4 as uuidv4 } from "uuid";
+import { useRouter } from "next/navigation";
 
 const materials = ["Holz", "Metall", "Kunststoff"];
 const colors = ["Rot", "Blau", "Grün", "Schwarz", "Weiß"];
 const categories = ["Dekoration", "Möbel", "Spielzeug"];
 
 export default function ProductUpload() {
-
+  const router = useRouter();
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -87,16 +88,17 @@ const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
 
     const uploadData = await uploadRes.json();
     const savedFiles: string[] = uploadData.savedFiles;
+    const picturesDto = savedFiles.map((f) => ({ fileName: f }));
 
     // Backend-Call an NestJS
-    const payload = { ...formData, images: savedFiles };
+    const payload = { ...formData, pictures: picturesDto };
     await api.post("/products/createproduct", payload);
 
     // Reset UI bei Erfolg
     setImages([]);
     setImagePreviews([]);
     setCurrentIndex(0);
-    alert("Produkt und Bilder erfolgreich gespeichert!");
+    router.push("/product");
 
   } catch (err: any) {
     console.error(err);
