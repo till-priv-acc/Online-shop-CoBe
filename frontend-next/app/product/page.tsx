@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Card, CardContent, CardMedia, Typography } from '@mui/material';
 import {api} from '@/lib/api'; // dein Axios/Api Instance
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 
 interface AllProducts {
   id: string;
@@ -52,49 +52,74 @@ const ProductsPage = () => {
   }, []);
 
   return (
+    <Box sx={{ width: "100%" }}>
+    {/* Header */}
     <Box
-      display="flex"
-      flexWrap="wrap"
-      gap={2}
-      padding={2}
-      justifyContent="flex-start"
-    >
-      {products.map((product) => {
-        const imagePath = product.pictures
-          ? `/product-images/${product.pictures}`
-          : '/images/placeholder.png';
+      sx={{
+        width: "100%",
+        height: 220,
+        borderRadius: 0,
+        backgroundImage: `url("/images/product-page.png")`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        mb: 6,
+        boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+      }}
+    />
 
-        return (
-          <Card
-            key={product.id}
-            sx={{ width: 250, display: 'flex', flexDirection: 'column' }}
-          >
-            <CardMedia
-              component="img"
-              height="140"
-              image={imagePath}
-              alt={product.name}
-              onError={(e: any) => {
-                e.target.onerror = null;
-                e.target.src = '/images/placeholder.png';
+      {/* 70%-Container zentriert */}
+      <Box
+        sx={{
+          width: "80%",
+          margin: "0 auto",
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 4,
+          justifyContent: "center",
+        }}
+      >
+        {products.map((product) => {
+          const imagePath = product.pictures
+            ? `/product-images/${product.pictures}`
+            : "/images/placeholder.png";
+
+          return (
+            <Card
+              key={product.id}
+              sx={{
+                width: 250,
+                display: "flex",
+                flexDirection: "column",
+                flexShrink: 0,
               }}
-            />
-            <CardContent>
-              <Typography variant="h6">{product.name}</Typography>
-              <Typography variant="body2" color="text.secondary">
-                Kategorie: {product.category}
-              </Typography>
-              <Typography variant="body1">Preis: €{product.price}</Typography>
-              <Typography
-                variant="body2"
-                color={product.isAvailible ? 'green' : 'red'}
-              >
-                {product.isAvailible ? 'Verfügbar' : 'Nicht verfügbar'}
-              </Typography>
-            </CardContent>
-          </Card>
-        );
-      })}
+            >
+              <CardMedia
+                component="img"
+                height="140"
+                image={imagePath}
+                alt={product.name}
+                onError={(e: any) => {
+                  e.target.onerror = null;
+                  e.target.src = "/images/placeholder.png";
+                }}
+              />
+              <CardContent>
+                <Typography variant="h6">{product.name}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Kategorie: {product.category}
+                </Typography>
+                <Typography variant="body1">Preis: €{product.price}</Typography>
+                <Typography
+                  variant="body2"
+                  color={product.isAvailible ? "green" : "red"}
+                >
+                  {product.isAvailible ? "Verfügbar" : "Nicht verfügbar"}
+                </Typography>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </Box>
     </Box>
   );
 };

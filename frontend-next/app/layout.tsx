@@ -21,8 +21,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           >
             <Box
               sx={{
-                width: "100%",
-                maxWidth: "1600px",
+                width: "70%",
                 margin: "0 auto",
                 display: "flex",
                 justifyContent: "center"

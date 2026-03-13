@@ -90,7 +90,7 @@ export default function AdminUserTable() {
   });
 
   return (
-    <Box sx={{ flex: 1, display: "flex", flexDirection: "column", gap: 3, p: 4, borderRadius: 3, background: "#fff", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", minWidth: 300 }}>
+    <Box sx={{ flex: 1, display: "flex", flexDirection: "column", gap: 3, p: 4, borderRadius: 3, background: "#fff", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", width:"100%" }}>
       <Typography variant="h6">Alle User</Typography>
       <Divider sx={{ mb: 2 }} />
 

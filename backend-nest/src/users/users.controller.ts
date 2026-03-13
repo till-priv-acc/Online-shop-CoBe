@@ -97,13 +97,23 @@ export class UsersController {
   // Check Session
   // --------------------
   @Get('check-session')
-  @UseGuards(AuthGuard)
   async checkSession(
     @Req() req: Request & { session: Session & { userId?: string } }
   ) {
     const loggedIn = !!req.session.userId;
     this.logger.log(`[UsersController] Check-cookie: loggedIn=${loggedIn}`);
-    return { loggedIn };
+
+    if (!loggedIn) {
+      return { loggedIn };
+    }
+
+    // userId ist hier garantiert vorhanden, also sicherer Non-null Assertion
+    const user = await this.usersService.findById(req.session.userId!);
+
+    return {
+      loggedIn,
+      role: user?.type ?? null,
+    };
   }
 
   @Get('check-seller')
