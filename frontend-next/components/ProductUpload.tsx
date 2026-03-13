@@ -8,10 +8,11 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { api } from "../lib/api";
 import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
+import { prodouctCategories, productColors, productMaterials } from "@/constants";
 
-const materials = ["Holz", "Metall", "Kunststoff"];
-const colors = ["Rot", "Blau", "Grün", "Schwarz", "Weiß"];
-const categories = ["Dekoration", "Möbel", "Spielzeug"];
+const materials = productMaterials;
+const colors = productColors;
+const categories = prodouctCategories;
 
 export default function ProductUpload() {
   const router = useRouter();

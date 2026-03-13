@@ -7,6 +7,7 @@ import type { Session } from 'express-session';
 import { AuthGuard } from './guards/auth.guard';
 import { AdminGuard } from './guards/admin.guard';
 import { CurrentUserId } from './decorators/current-user-id.decorater';
+import { SellerGuard } from './guards/seller.guard';
 
 @Controller('users')
 export class UsersController {
@@ -96,7 +97,18 @@ export class UsersController {
   // Check Session
   // --------------------
   @Get('check-session')
+  @UseGuards(AuthGuard)
   async checkSession(
+    @Req() req: Request & { session: Session & { userId?: string } }
+  ) {
+    const loggedIn = !!req.session.userId;
+    this.logger.log(`[UsersController] Check-cookie: loggedIn=${loggedIn}`);
+    return { loggedIn };
+  }
+
+  @Get('check-seller')
+  @UseGuards(SellerGuard)
+  async checkSeller(
     @Req() req: Request & { session: Session & { userId?: string } }
   ) {
     const loggedIn = !!req.session.userId;
@@ -108,6 +120,7 @@ export class UsersController {
   // Get current user
   // --------------------
   @Get('me')
+  @UseGuards(AuthGuard)
   async getUserData(
     @Req() req: Request & { session: Session & { userId?: string } }
   ) {

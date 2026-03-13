@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Card, CardContent, CardMedia, Typography } from '@mui/material';
 import {api} from '@/lib/api'; // dein Axios/Api Instance
+import { useRouter } from 'next/router';
 
 interface AllProducts {
   id: string;
@@ -15,20 +16,39 @@ interface AllProducts {
 }
 
 const ProductsPage = () => {
+  const router = useRouter();
   const [products, setProducts] = useState<AllProducts[]>([]);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const init = async () => {
       try {
-        const res = await api.get<AllProducts[]>('products/allProducts'); // wie /users/me
+        const check = await api.get("/users/check-session");
+
+        if (!check.data.loggedIn) {
+          router.push("/login");
+          return;
+        }
+
+        const res = await api.get<AllProducts[]>("products/allProducts");
         setProducts(res.data);
-        res.data.forEach(p => console.log('Bildname:', p.pictures ?? 'Kein Bild'));
+
+        res.data.forEach((p) =>
+          console.log("Bildname:", p.pictures ?? "Kein Bild")
+        );
       } catch (err) {
-        console.error('Fehler beim Laden der Produkte', err);
+        if (typeof err === "object" && err !== null && "response" in err) {
+          const error = err as { response?: { status?: number } };
+
+          if (error.response?.status === 401) {
+            router.push("/login");
+            return;
+          }
+        }
+        console.error("Fehler beim Laden der Produkte", err);
       }
     };
 
-    fetchProducts();
+    init();
   }, []);
 
   return (

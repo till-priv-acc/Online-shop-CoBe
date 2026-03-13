@@ -206,3 +206,7 @@ export interface UserAcc {
   town: string;
   country: string;
 }
+
+export const productMaterials = ["Holz", "Metall", "Kunststoff", "Stoff", "Halbmetall"];
+export const productColors = ["Rot", "Blau", "Grün", "Schwarz", "Weiß", "Beige", "Hellblau", "Braun", "Dunkelbraun", "Hellbraun", "Rosa", "Lila", "Hellgrün"];
+export const prodouctCategories = ["Dekoration", "Möbel", "Spielzeug", "Küche", "Auto Zubehör", "Fashion", "Elektronik", "Haustier Zubehör", "Beauty und Gesundheit"];

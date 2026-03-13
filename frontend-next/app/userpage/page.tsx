@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import useSWR from "swr";
+import { useRouter } from "next/router";
 import LogoutButton from "../../components/LogoutButton";
 import PasswordChangeButtonModal from "@/components/PasswordChangeModal";
 import UpdateUserDataModal from "@/components/UpdateUserDataModal";
@@ -17,6 +18,7 @@ interface Invoice {
 }
 
 export default function ProfilePage() {
+  const router = useRouter();
   const [error, setError] = useState<string>("");
   const [invoices] = useState<Invoice[]>([
     { id: "1", number: "INV-001", amount: "150€" },
@@ -27,7 +29,7 @@ export default function ProfilePage() {
   const { data: user, mutate } = useSWR<UserAcc>("/users/me", async () => {
     const check = await api.get("/users/check-session");
     if (!check.data.loggedIn) {
-      window.location.href = "/login";
+      router.push("/login");
       return null;
     }
     const res = await api.get("/users/me");
@@ -37,7 +39,7 @@ export default function ProfilePage() {
   const headerImage = error ? "/images/pb-error.png" : "/images/pb-success.png";
 
   return (
-    <Box sx={{ maxWidth: 1600, mx: "auto", px: 3, py: 4 }}>
+    <Box>
       {/* Header */}
       <Box
         sx={{
@@ -190,6 +192,6 @@ export default function ProfilePage() {
           )}
         </Box>
       )}
-    </Box>
+   </Box> 
   );
 }
