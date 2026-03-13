@@ -70,7 +70,7 @@ const ProductsPage = () => {
       {/* 70%-Container zentriert */}
       <Box
         sx={{
-          width: "80%",
+          width: "70%",
           margin: "0 auto",
           display: "flex",
           flexWrap: "wrap",
