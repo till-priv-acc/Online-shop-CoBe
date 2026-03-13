@@ -210,3 +210,28 @@ export interface UserAcc {
 export const productMaterials = ["Holz", "Metall", "Kunststoff", "Stoff", "Halbmetall"];
 export const productColors = ["Rot", "Blau", "Grün", "Schwarz", "Weiß", "Beige", "Hellblau", "Braun", "Dunkelbraun", "Hellbraun", "Rosa", "Lila", "Hellgrün"];
 export const prodouctCategories = ["Dekoration", "Möbel", "Spielzeug", "Küche", "Auto Zubehör", "Fashion", "Elektronik", "Haustier Zubehör", "Beauty und Gesundheit"];
+
+export class ProductDBDTO {
+  id!: string;                  // UUID
+  name!: string;                // Produktname
+  description!: string;
+  crowd!: number;
+  minCrowd!: number;
+  price!: number;
+  deliverable!: number;         // Lieferzeit in Tagen
+  deliverableAbroad!: number;   // Lieferzeit ins Ausland
+  material!: string;
+  color!: string;
+  category!: string;
+  isAvailible!: boolean;
+  createFrom!: string;          // User-ID (Fremdschlüssel)
+  pictures?: PictureCallDto[]; // optional
+
+  constructor(partial: Partial<ProductDBDTO>) {
+    Object.assign(this, partial);
+  }
+}
+
+interface PictureCallDto {
+  fileName: string;
+}

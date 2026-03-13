@@ -3,6 +3,7 @@ import * as sqlite3 from 'sqlite3';
 import { ProductEntity, PictureEntity, CreateCallDTO, PictureCallDto, AllProducts } from './dto/products.dto';
 import { ProductLogger } from '../logger/product-logger.service';
 import { v4 as uuidv4 } from 'uuid';
+import { ProductDBDTO } from './dto/products.dto';
 
 @Injectable()
 export class ProductsService {
@@ -170,5 +171,61 @@ export class ProductsService {
       });
     });
   });
+  }
+
+  async getProductDetail(productId: string): Promise<ProductDBDTO> {
+  return new Promise((resolve, reject) => {
+    // 1. Produkt aus DB holen
+    this.db.get(`SELECT * FROM products WHERE id = ?`, [productId], (err: Error | null, row: any) => {
+      if (err) {
+        this.logger.error(`[ProductsService] Error fetching product ${productId}: ${err.message}`, err.stack);
+        return reject(err);
+      }
+
+      if (!row) {
+        return reject(new Error(`Product ${productId} not found`));
+      }
+
+      // 2. Alle Bilder für dieses Produkt abrufen
+      this.db.all(`SELECT fileName FROM pictures WHERE productId = ?`, [productId], (picErr: Error | null, picRows: any[]) => {
+        if (picErr) {
+          this.logger.error(`[ProductsService] Error fetching pictures for product ${productId}: ${picErr.message}`);
+          return reject(picErr);
+        }
+
+        const pictures = picRows.map(p => ({ fileName: p.fileName })); // nur Dateinamen als PictureDBDto
+
+        // 3. User Name + Firstname holen
+        this.db.get(`SELECT name, firstname FROM users WHERE id = ?`, [row.createFrom], (userErr: Error | null, userRow: any) => {
+          if (userErr || !userRow) {
+            this.logger.error(`[ProductsService] Error fetching user for product ${productId}: ${userErr?.message}`);
+            userRow = { name: 'Unknown', firstname: '' };
+          }
+
+          // 4. DTO erstellen
+          const productDto = new ProductDBDTO({
+            id: row.id,
+            name: row.name,
+            description: row.description,
+            crowd: row.crowd,
+            minCrowd: row.minCrowd,
+            price: row.price,
+            deliverable: row.deliverable,
+            deliverableAbroad: row.deliverableAbroad,
+            material: row.material,
+            color: row.color,
+            category: row.category,
+            isAvailible: !!row.isAvailible,
+            createFrom: `${userRow.name} ${userRow.firstname}`,
+            pictures: pictures.length > 0 ? pictures : undefined,
+          });
+
+          this.logger.log(`[ProductsService] Fetched product ${productId}: ${JSON.stringify(productDto)}`);
+          resolve(productDto);
+        });
+      });
+    });
+  });
 }
+
 }

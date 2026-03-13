@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Box, Card, CardContent, CardMedia, Typography } from '@mui/material';
+import { Box, Card, CardContent, CardMedia, Typography, IconButton } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 import {api} from '@/lib/api'; // dein Axios/Api Instance
 import { useRouter } from 'next/navigation';
 
@@ -91,6 +92,7 @@ const ProductsPage = () => {
                 display: "flex",
                 flexDirection: "column",
                 flexShrink: 0,
+                position: "relative",
               }}
             >
               <CardMedia
@@ -103,8 +105,26 @@ const ProductsPage = () => {
                   e.target.src = "/images/placeholder.png";
                 }}
               />
+
+              {/* Lupen-Button oben rechts */}
+              <IconButton
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  backgroundColor: "rgba(255,255,255,0.8)",
+                  "&:hover": { backgroundColor: "rgba(255,255,255,1)" },
+                }}
+                onClick={() => router.push(`/product/${product.id}`)}
+              >
+                <SearchIcon />
+              </IconButton>
+
               <CardContent>
                 <Typography variant="h6">{product.name}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Verkäufer: {product.createFrom}
+                </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Kategorie: {product.category}
                 </Typography>

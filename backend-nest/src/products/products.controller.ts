@@ -1,9 +1,10 @@
-import { Controller, Post, Get, InternalServerErrorException, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, InternalServerErrorException, Body, UseGuards, Param } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { CreateCallDTO, AllProducts } from './dto/products.dto';
+import { CreateCallDTO, AllProducts, ProductDBDTO } from './dto/products.dto';
 import { CurrentUserId } from '../users/decorators/current-user-id.decorater';
 import { SellerGuard } from '../users/guards/seller.guard';
 import { ProductLogger } from '../logger/product-logger.service';
+import { AuthGuard } from '../users/guards/auth.guard';
 
 @Controller('products')
 export class ProductsController {
@@ -24,16 +25,36 @@ export class ProductsController {
     return product;
   }
 
-    @Get('allProducts')
+  @Get('allProducts')
+  @UseGuards(AuthGuard)
   async getAllProducts(): Promise<AllProducts[]> {
+    this.logger.log(`[ProductsController] GET /allProducts called`);
     try {
       const products = await this.productsService.getAllProducts();
+      this.logger.log(`[ProductsController] Fetched ${products.length} products`);
       return products;
     } catch (err: unknown) {
-      // Type-Safe Zugriff auf err.message
       const message = err instanceof Error ? err.message : 'Unknown error';
-      console.error(`[ProductsController] Error fetching products: ${message}`);
+      this.logger.error(`[ProductsController] Error fetching all products: ${message}`);
       throw new InternalServerErrorException(message);
     }
   }
+
+  @Get('product/:id')
+  @UseGuards(AuthGuard)
+  async getProduct(
+    @Param('id') id: string,
+  ): Promise<ProductDBDTO> {
+    this.logger.log(`[ProductsController] GET /product/${id} called`);
+    try {
+      const product = await this.productsService.getProductDetail(id);
+      this.logger.log(`[ProductsController] Fetched product ${id} successfully`);
+      return product;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      this.logger.error(`[ProductsController] Error fetching product ${id}: ${message}`);
+      throw new InternalServerErrorException(message);
+    }
+  }
+
 }

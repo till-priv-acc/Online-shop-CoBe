@@ -61,7 +61,7 @@ export class CreateCallDTO {             // UUID
 }
 
 // DTO für Create User Request
-export class CreateDBDTO {
+export class ProductDBDTO {
   id!: string;                  // UUID
   name!: string;                // Produktname
   description!: string;
@@ -75,9 +75,9 @@ export class CreateDBDTO {
   category!: string;
   isAvailible!: boolean;
   createFrom!: string;          // User-ID (Fremdschlüssel)
-  pictures?: PictureDBDto[]; // optional
+  pictures?: PictureCallDto[]; // optional
 
-  constructor(partial: Partial<CreateDBDTO>) {
+  constructor(partial: Partial<ProductDBDTO>) {
     Object.assign(this, partial);
   }
 }
