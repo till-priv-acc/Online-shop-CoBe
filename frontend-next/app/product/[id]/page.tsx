@@ -7,7 +7,7 @@ import { Box, Typography, IconButton, Divider, Chip } from '@mui/material';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { api } from '@/lib/api';
-import { ProductDBDTO } from '@/constants';
+import { ProductDBDTO, productCategoryColors } from '@/constants';
 
 export default function ProductDetailPage() {
   const router = useRouter();
@@ -122,28 +122,39 @@ export default function ProductDetailPage() {
           {product.name}
         </Typography>
 
-        <Typography variant="h5" sx={{ color: '#b12704', fontWeight: 600 }}>
+        <Typography variant="h5" sx={{ color: '#052d65', fontWeight: 600 }}>
           €{product.price}
         </Typography>
 
+        <Divider />
+
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
-          <Chip label={product.category} color="primary" size="small" />
+          <Chip
+            label={product.category}
+            size="small"
+            sx={{
+                backgroundColor: productCategoryColors[product.category] || "#ccc",
+                color: "#fff",
+                fontWeight: 500,
+            }}
+            />
           <Chip label={product.material} size="small" />
           <Chip label={product.color} size="small" />
           <Chip label={product.isAvailible ? 'Verfügbar' : 'Nicht verfügbar'} color={product.isAvailible ? 'success' : 'default'} size="small" />
         </Box>
-
-        <Divider />
 
         <Typography variant="body1" sx={{ mb: 1 }}>
           {product.description}
         </Typography>
 
         {userRole && userRole !== 'USER' && (
-          <Box sx={{ display: 'flex', gap: 3 }}>
+        <Box>
+        <Divider />
+          <Box sx={{ display: 'flex', gap: 3, mt: 2 }}>
             <Typography variant="body2">Stückzahl: {product.crowd}</Typography>
             <Typography variant="body2">Mindest Stückzahl: {product.minCrowd}</Typography>
           </Box>
+        </Box>
         )}
 
         <Divider />
