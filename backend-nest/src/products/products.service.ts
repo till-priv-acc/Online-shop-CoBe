@@ -196,7 +196,7 @@ export class ProductsService {
         const pictures = picRows.map(p => ({ fileName: p.fileName })); // nur Dateinamen als PictureDBDto
 
         // 3. User Name + Firstname holen
-        this.db.get(`SELECT name, firstname FROM users WHERE id = ?`, [row.createFrom], (userErr: Error | null, userRow: any) => {
+        this.db.get(`SELECT name, firstname, hNumber, street, town, pCode, country FROM users WHERE id = ?`, [row.createFrom], (userErr: Error | null, userRow: any) => {
           if (userErr || !userRow) {
             this.logger.error(`[ProductsService] Error fetching user for product ${productId}: ${userErr?.message}`);
             userRow = { name: 'Unknown', firstname: '' };
@@ -218,6 +218,7 @@ export class ProductsService {
             isAvailible: !!row.isAvailible,
             createFrom: `${userRow.name} ${userRow.firstname}`,
             createFromID: row.createFrom,
+            createFromAdress: `${userRow.country}, ${userRow.pCode} ${userRow.town}, ${userRow.street} ${userRow.hNumber}`,
             pictures: pictures.length > 0 ? pictures : undefined,
           });
 

@@ -113,6 +113,7 @@ export class UsersController {
     return {
       loggedIn,
       role: user?.type ?? null,
+      userId: req.session.userId!, // <-- hier hinzufügen
     };
   }
 

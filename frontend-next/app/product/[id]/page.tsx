@@ -17,15 +17,16 @@ export default function ProductDetailPage() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const fetcher = async (): Promise<{ product: ProductDBDTO; userRole: string } | null> => {
+  const fetcher = async (): Promise<{ product: ProductDBDTO; userRole: string, userid: string } | null> => {
     const check = await api.get('/users/check-session');
     if (!check.data.loggedIn) {
       router.push('/login');
       return null;
     }
+    const userid: string = check.data.userId || '';
     const userRole: string = check.data.role || '';
     const res = await api.get<ProductDBDTO>(`/products/product/${id}`);
-    return { product: res.data, userRole };
+    return { product: res.data, userRole, userid };
   };
 
   const { data, error, isLoading, mutate } = useSWR(id ? `/products/product/${id}` : null, fetcher);
@@ -34,7 +35,7 @@ export default function ProductDetailPage() {
   if (error) return <p>Fehler beim Laden des Produkts</p>;
   if (!data) return null;
 
-  const { product, userRole } = data;
+  const { product, userRole, userid } = data;
   const imagePreviews = product.pictures?.map(pic => `/product-images/${pic.fileName}`) || [];
 
   return (
@@ -119,13 +120,15 @@ export default function ProductDetailPage() {
       )}
 
       {/* Produktinfos */}
-      <Typography variant="h4" sx={{ fontWeight: 700 }}>
-        {product.name}
-      </Typography>
+      <Box sx={{ textAlign: 'center', mb: 2 }}>
+        <Typography variant="h3" sx={{ fontWeight: 700 }}>
+          {product.name}
+        </Typography>
 
-      <Typography variant="h5" sx={{ color: '#052d65', fontWeight: 600 }}>
-        €{product.price}
-      </Typography>
+        <Typography variant="h4" sx={{ color: '#052d65', fontWeight: 600 }}>
+          €{product.price}
+        </Typography>
+      </Box>
 
       {/* Zentrierte Basisdaten-Box */}
       <Box
@@ -157,6 +160,7 @@ export default function ProductDetailPage() {
             label={product.category}
             size="medium"
             sx={{
+              fontSize: '1rem',
               backgroundColor: productCategoryColors[product.category] || '#ccc',
               color: '#fff',
               fontWeight: 500,
@@ -239,7 +243,7 @@ export default function ProductDetailPage() {
         )}
 
         {/* Actions */}
-        {userRole && userRole === 'SELLER' && (
+        {userid && userid == product.createFromID && (
           <Box sx={{width:"100%"}}>
             <Divider sx={{width: "100%", mt: 2, mb: 1 }}>Actions</Divider>
             <ProductUpdate initialData={product!} onSuccess={() => mutate()} />
@@ -247,6 +251,9 @@ export default function ProductDetailPage() {
         )}
 
         <Divider sx={{width: "100%", mt: 2, mb: 1 }}>Verkauft von {product.createFrom}</Divider>
+        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+          {product.createFromAdress}
+        </Typography>
       </Box>
     </Box>
   </Box>

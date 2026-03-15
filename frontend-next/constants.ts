@@ -238,6 +238,7 @@ export class ProductDBDTO {
   isAvailible!: boolean;
   createFrom!: string;          // User-ID (Fremdschlüssel)
   createFromID!: string;
+  createFromAdress!: string;
   pictures?: PictureCallDto[]; // optional
 
   constructor(partial: Partial<ProductDBDTO>) {
