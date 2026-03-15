@@ -1,6 +1,6 @@
-import { Controller, Post, Get, InternalServerErrorException, Body, UseGuards, Param } from '@nestjs/common';
+import { Controller, Post, Get, InternalServerErrorException, BadRequestException, ForbiddenException, Body, UseGuards, Param, Req, Patch } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { CreateCallDTO, AllProducts, ProductDBDTO } from './dto/products.dto';
+import { CreateCallDTO, AllProducts, ProductDBDTO, ProductUpdateDTO } from './dto/products.dto';
 import { CurrentUserId } from '../users/decorators/current-user-id.decorater';
 import { SellerGuard } from '../users/guards/seller.guard';
 import { ProductLogger } from '../logger/product-logger.service';
@@ -56,5 +56,43 @@ export class ProductsController {
       throw new InternalServerErrorException(message);
     }
   }
+
+  // --------------------
+// Update UserData
+// --------------------
+@Patch('updateProductData')
+@UseGuards(SellerGuard)
+async updateProductData(
+  @CurrentUserId() userId: string,
+  @Body() body: ProductUpdateDTO,
+) {
+
+  if (!userId) {
+    this.logger.warn('[ProductsController] updateUserData: decorator has no userId found');
+    throw new InternalServerErrorException('Problem with the userId');
+  }
+
+  if(userId != body.createFrom) {
+    this.logger.warn('[ProductsController] updateUserData: current Userid is not the Seller from the Product');
+    throw new ForbiddenException('Seller has no rights to update');
+  }
+
+  const success = await this.productsService.updateProduct(
+    body
+  );
+
+  if (!success) {
+    this.logger.warn(
+      `[ProductsController] updateProductData: Problem by updating Data from Product ${body.id}`
+    );
+    throw new BadRequestException('Problem with updating');
+  }
+
+  this.logger.log(
+    `[ProductsController] updateProductData: ProductData updated for userId ${body.id}`
+  );
+
+  return { message: 'ProductData updated successfully' };
+}
 
 }

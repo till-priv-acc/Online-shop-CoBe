@@ -60,7 +60,29 @@ export class CreateCallDTO {             // UUID
   }
 }
 
-// DTO für Create User Request
+// DTO für Produkt Request
+export class ProductUpdateDTO {
+  id!: string;                  // UUID
+  name!: string;                // Produktname
+  description!: string;
+  crowd!: number;
+  minCrowd!: number;
+  price!: number;
+  deliverable!: number;         // Lieferzeit in Tagen
+  deliverableAbroad!: number;   // Lieferzeit ins Ausland
+  material!: string;
+  color!: string;
+  category!: string;
+  isAvailible!: boolean;
+  createFrom!: string;
+  pictures?: PictureCallDto[]; // optional
+
+  constructor(partial: Partial<ProductDBDTO>) {
+    Object.assign(this, partial);
+  }
+}
+
+// DTO für Produkt Request
 export class ProductDBDTO {
   id!: string;                  // UUID
   name!: string;                // Produktname
@@ -74,7 +96,8 @@ export class ProductDBDTO {
   color!: string;
   category!: string;
   isAvailible!: boolean;
-  createFrom!: string;          // User-ID (Fremdschlüssel)
+  createFrom!: string;          // User Name
+  createFromID!: string;         // UUID User
   pictures?: PictureCallDto[]; // optional
 
   constructor(partial: Partial<ProductDBDTO>) {
@@ -89,7 +112,8 @@ export class AllProducts {
   price!: number;
   category!: string;
   isAvailible!: boolean;
-  createFrom!: string;          // User-ID (Fremdschlüssel)
+  createFrom!: string;          // User Name
+  createFromid!: string;        // User-ID 
   pictures?: string; // optional
 
   constructor(partial: Partial<AllProducts>) {

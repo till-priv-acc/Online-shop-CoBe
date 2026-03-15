@@ -16,21 +16,10 @@ import {
   MenuItem,
 } from "@mui/material";
 import { Edit } from "@mui/icons-material";
-import { prodouctCategories, productColors, productMaterials } from "@/constants";
+import { prodouctCategories, productColors, productMaterials, ProductDBDTO} from "@/constants";
 
 interface ProductUpdateModalProps {
-  initialData: {
-    name: string;
-    description: string;
-    crowd: number;
-    minCrowd: number;
-    price: number;
-    deliverable: number;
-    deliverableAbroad: number;
-    material: string;
-    color: string;
-    category: string;
-  };
+  initialData: ProductDBDTO;
   onSuccess?: () => void;
 }
 
@@ -49,6 +38,11 @@ export default function ProductUpdate({ initialData, onSuccess }: ProductUpdateM
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const id = initialData.id;
+  const isAvailible = initialData.isAvailible;
+  const pictures = initialData.pictures;
+  const createFrom = initialData.createFromID;
 
   // Wenn sich initialData ändert, Felder aktualisieren
   useEffect(() => {
@@ -71,6 +65,7 @@ export default function ProductUpdate({ initialData, onSuccess }: ProductUpdateM
 
     try {
     await api.patch("/products/updateProductData", {
+      id,
       name,
       description,
       crowd,
@@ -81,6 +76,9 @@ export default function ProductUpdate({ initialData, onSuccess }: ProductUpdateM
       material,
       color,
       category,
+      isAvailible,
+      createFrom,
+      pictures
     });
 
     // Optional: direkt Userdaten refetchen
@@ -132,12 +130,13 @@ export default function ProductUpdate({ initialData, onSuccess }: ProductUpdateM
             {success && <Alert severity="success">{success}</Alert>}
 
             {/* ---------------- Name ---------------- */}
-              <TextField label="Name" name="name" fullWidth onChange={(e) => setName(e.target.value)} sx={{ gridColumn: "1 / -1" }} />
+              <TextField label="Name" name="name" value={name} fullWidth onChange={(e) => setName(e.target.value)} sx={{ gridColumn: "1 / -1" }} />
             
               {/* ---------------- Beschreibung (Textarea) ---------------- */}
               <TextField
                 label="Beschreibung"
                 name="description"
+                value={description}
                 multiline
                 rows={4}
                 fullWidth
@@ -147,53 +146,53 @@ export default function ProductUpdate({ initialData, onSuccess }: ProductUpdateM
             
               {/* ---------------- Crowd-Bereich (2x2) ---------------- */}
               <Divider sx={{ gridColumn: "1 / -1", mt: 2, mb: 1 }}>Verfügbarkeit und Versand</Divider>
-              <TextField label="Crowd" name="crowd" type="number" fullWidth onChange={(e) => setCrowd(Number(e.target.value))} />
-              <TextField label="Min Crowd" name="minCrowd" type="number" fullWidth onChange={(e) => setMinCrowd(Number(e.target.value))} />
-              <TextField label="Deliverable" name="deliverable" type="number" fullWidth onChange={(e) => setDelideliverable(Number(e.target.value))} />
-              <TextField label="Deliverable Abroad" name="deliverableAbroad" type="number" fullWidth onChange={(e) => setDeliverableAbroad(Number(e.target.value))} />
+              <TextField label="Crowd" name="crowd" type="number" value={crowd} fullWidth onChange={(e) => setCrowd(Number(e.target.value))} />
+              <TextField label="Min Crowd" name="minCrowd" type="number" value={minCrowd} fullWidth onChange={(e) => setMinCrowd(Number(e.target.value))} />
+              <TextField label="Deliverable" name="deliverable" type="number" value={deliverable} fullWidth onChange={(e) => setDelideliverable(Number(e.target.value))} />
+              <TextField label="Deliverable Abroad" name="deliverableAbroad" type="number" value={deliverableAbroad} fullWidth onChange={(e) => setDeliverableAbroad(Number(e.target.value))} />
             
               {/* ---------------- Material / Color / Category ---------------- */}
               <Divider sx={{ gridColumn: "1 / -1", mt: 2, mb: 1 }}>Eigenschaften</Divider>
               <TextField
-                  select
-                  label="Land"
-                  fullWidth
-                  value={materials}
-                  onChange={(e) => setMaterial(e.target.value)}
-                  >
-                  {materials.map((c) => (
-                      <MenuItem key={c} value={c}>
-                      {c}
-                      </MenuItem>
-                  ))}
+                select
+                label="Material"
+                fullWidth
+                value={material}
+                onChange={(e) => setMaterial(e.target.value)}
+              >
+                {materials.map((m) => (
+                  <MenuItem key={m} value={m}>
+                    {m}
+                  </MenuItem>
+                ))}
               </TextField>
             
               <TextField
-                  select
-                  label="Land"
-                  fullWidth
-                  value={colors}
-                  onChange={(e) => setColor(e.target.value)}
-                  >
-                  {colors.map((c) => (
-                      <MenuItem key={c} value={c}>
-                      {c}
-                      </MenuItem>
-                  ))}
+                select
+                label="Color"
+                fullWidth
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+              >
+                {colors.map((c) => (
+                  <MenuItem key={c} value={c}>
+                    {c}
+                  </MenuItem>
+                ))}
               </TextField>
             
               <TextField
-                  select
-                  label="Land"
-                  fullWidth
-                  value={categories}
-                  onChange={(e) => setCategory(e.target.value)}
-                  >
-                  {categories.map((c) => (
-                      <MenuItem key={c} value={c}>
-                      {c}
-                      </MenuItem>
-                  ))}
+                select
+                label="Color"
+                fullWidth
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                {categories.map((ca) => (
+                  <MenuItem key={ca} value={ca}>
+                    {ca}
+                  </MenuItem>
+                ))}
               </TextField>
             
               {/* ---------------- Preis ---------------- */}
@@ -202,6 +201,7 @@ export default function ProductUpdate({ initialData, onSuccess }: ProductUpdateM
                 label="Preis"
                 name="price"
                 type="number"
+                value={price}
                 fullWidth
                 sx={{ gridColumn: "1 / -1" }}
                 onChange={(e) => setPrice(Number(e.target.value))}

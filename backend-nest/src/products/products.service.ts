@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import * as sqlite3 from 'sqlite3';
-import { ProductEntity, PictureEntity, CreateCallDTO, PictureCallDto, AllProducts } from './dto/products.dto';
+import { ProductEntity, PictureEntity, CreateCallDTO, PictureCallDto, AllProducts, ProductDBDTO, ProductUpdateDTO } from './dto/products.dto';
 import { ProductLogger } from '../logger/product-logger.service';
 import { v4 as uuidv4 } from 'uuid';
-import { ProductDBDTO } from './dto/products.dto';
 
 @Injectable()
 export class ProductsService {
@@ -155,6 +154,7 @@ export class ProductsService {
                 category: row.category,
                 isAvailible: !!row.isAvailible,
                 createFrom: `${userRow.name} ${userRow.firstname}`,
+                createFromid: row.createFrom,
                 pictures: fileName,
               });
 
@@ -217,6 +217,7 @@ export class ProductsService {
             category: row.category,
             isAvailible: !!row.isAvailible,
             createFrom: `${userRow.name} ${userRow.firstname}`,
+            createFromID: row.createFrom,
             pictures: pictures.length > 0 ? pictures : undefined,
           });
 
@@ -224,6 +225,54 @@ export class ProductsService {
           resolve(productDto);
         });
       });
+    });
+  });
+}
+
+async updateProduct(productUpdateDTO: ProductUpdateDTO): Promise<boolean> {
+  this.logger.log(`[ProductsService] Product update started for id: ${productUpdateDTO.id}`);
+
+  const prod = new ProductEntity({ ...productUpdateDTO });
+  const isAvailible = prod.crowd > prod.minCrowd;
+
+  return new Promise((resolve, reject) => {
+    const sql = `
+      UPDATE products SET
+        name = ?, 
+        description = ?, 
+        crowd = ?, 
+        minCrowd = ?, 
+        price = ?,
+        deliverable = ?, 
+        deliverableAbroad = ?, 
+        material = ?, 
+        color = ?,
+        category = ?,
+        isAvailible = ?
+      WHERE id = ?
+    `;
+
+    const params = [
+      prod.name,
+      prod.description,
+      prod.crowd,
+      prod.minCrowd,
+      prod.price,
+      prod.deliverable,
+      prod.deliverableAbroad,
+      prod.material,
+      prod.color,
+      prod.category,
+      isAvailible,
+      prod.id
+    ];
+
+    this.db.run(sql, params, function (err: Error | null) {
+      if (err) return reject(err);
+
+      if (this.changes === 0) return resolve(false);
+
+      resolve(true);
     });
   });
 }
