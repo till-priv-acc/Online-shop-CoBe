@@ -9,7 +9,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { api } from "../lib/api";
+import { api } from "@/lib/api";
 import { allCountries } from "@/constants";
 
 interface RegisterFormData {

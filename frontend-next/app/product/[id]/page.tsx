@@ -150,7 +150,7 @@ export default function ProductDetailPage() {
         {userRole && userRole !== 'USER' && (
         <Box>
         <Divider />
-          <Box sx={{ display: 'flex', gap: 3, mt: 2 }}>
+          <Box sx={{ display: 'flex', gap: 3, mt: 3 }}>
             <Typography variant="body2">Stückzahl: {product.crowd}</Typography>
             <Typography variant="body2">Mindest Stückzahl: {product.minCrowd}</Typography>
           </Box>

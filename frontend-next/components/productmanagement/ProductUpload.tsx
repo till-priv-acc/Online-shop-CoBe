@@ -5,7 +5,7 @@ import { Box, Divider, TextField, Button, MenuItem, FormControl, InputLabel, Typ
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { api } from "../lib/api";
+import { api } from "../../lib/api";
 import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
 import { prodouctCategories, productColors, productMaterials } from "@/constants";
@@ -150,7 +150,7 @@ const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
   />
 
   {/* ---------------- Crowd-Bereich (2x2) ---------------- */}
-  <Divider sx={{ gridColumn: "1 / -1", mt: 2, mb: 1 }}>Crowd Angaben</Divider>
+  <Divider sx={{ gridColumn: "1 / -1", mt: 2, mb: 1 }}>Verfügbarkeit und Versand</Divider>
   <TextField label="Crowd" name="crowd" type="number" fullWidth onChange={handleChange} />
   <TextField label="Min Crowd" name="minCrowd" type="number" fullWidth onChange={handleChange} />
   <TextField label="Deliverable" name="deliverable" type="number" fullWidth onChange={handleChange} />

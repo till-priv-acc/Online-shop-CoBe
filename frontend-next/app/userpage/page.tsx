@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { useRouter } from "next/navigation";
-import LogoutButton from "../../components/LogoutButton";
-import PasswordChangeButtonModal from "@/components/PasswordChangeModal";
-import UpdateUserDataModal from "@/components/UpdateUserDataModal";
-import AdminUserTable from "@/components/AdminUserTable";
+import LogoutButton from "../../components/auth/LogoutButton";
+import PasswordChangeButtonModal from "@/components/usermanagement/PasswordChangeModal";
+import UpdateUserDataModal from "@/components/usermanagement/UpdateUserDataModal";
+import AdminUserTable from "@/components/usermanagement/AdminUserTable";
 import { Box, Typography, Divider, CircularProgress } from "@mui/material";
 import { api } from "../../lib/api";
 import { UserAcc } from "@/constants";

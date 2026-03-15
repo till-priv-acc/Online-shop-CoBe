@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Box } from "@mui/material";
 import {api} from "@/lib/api";
-import ProductUpload from "@/components/ProductUpload";
+import ProductUpload from "@/components/productmanagement/ProductUpload";
 
 export default function ProductPage() {
   const router = useRouter();
