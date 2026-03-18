@@ -36,7 +36,7 @@ export default function ProductDelete({ productID, productName, productPics }: P
     setLoading(true);
 
     try {
-    await api.delete(`/products/${productID}`);
+    await api.delete(`/products/product/${productID}`);
 
     if (productPics.length > 0) {
     await fetch("/api/delete-images", {

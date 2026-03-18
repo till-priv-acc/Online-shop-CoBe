@@ -18,7 +18,7 @@ export default function ProductPage() {
           const error = err as { response?: { status?: number } };
 
           if (error.response?.status === 403) {
-            router.push("/userpage");
+            router.push("/product");
             return;
           }
         }

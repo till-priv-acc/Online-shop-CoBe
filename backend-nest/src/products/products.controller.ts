@@ -1,4 +1,4 @@
-import { Controller, Post, Delete, Get, InternalServerErrorException, NotFoundException, BadRequestException, ForbiddenException, Body, UseGuards, Param, Req, Patch } from '@nestjs/common';
+import { Controller, Post, Delete, Get, HttpException, InternalServerErrorException, NotFoundException, BadRequestException, ForbiddenException, Body, UseGuards, Param, Req, Patch } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateCallDTO, AllProducts, ProductDBDTO, ProductUpdateDTO } from './dto/products.dto';
 import { CurrentUserId } from '../users/decorators/current-user-id.decorater';
@@ -13,6 +13,10 @@ export class ProductsController {
     private readonly logger: ProductLogger
   ) {}
 
+  // --------------------
+  // Create Product
+  // --------------------
+
   @Post('createproduct')
   @UseGuards(SellerGuard)
   async createProduct(
@@ -24,6 +28,10 @@ export class ProductsController {
     this.logger.log(`[ProductsController] Product created: ${product.name} (ID: ${product.id})`);
     return product;
   }
+
+  // --------------------
+  // Get All Products
+  // --------------------
 
   @Get('allProducts')
   @UseGuards(AuthGuard)
@@ -39,6 +47,10 @@ export class ProductsController {
       throw new InternalServerErrorException(message);
     }
   }
+
+  // --------------------
+  // Get Product Detail
+  // --------------------
 
   @Get('product/:id')
   @UseGuards(AuthGuard)
@@ -57,65 +69,89 @@ export class ProductsController {
     }
   }
 
-@Delete('product/:id')
-@UseGuards(SellerGuard)
-async deleteProduct(
-  @CurrentUserId() userId: string,
-  @Param('id') id: string,
-): Promise<void> {
-  this.logger.log(`[ProductsController] Delete /product/${id} called`);
+  // --------------------
+  // Delete Product
+  // --------------------
 
-  if (userId != id) {
-    this.logger.warn(`[ProductsController] deleteProduct: current UserId is not the seller`);
-    throw new ForbiddenException('Seller has no rights to delete');
+  @Delete('product/:id')
+  @UseGuards(SellerGuard)
+  async deleteProduct(
+    @CurrentUserId() userId: string,
+    @Param('id') id: string,
+  ): Promise<void> {
+    this.logger.log(`[ProductsController] Delete /product/${id} called`);
+
+    try {
+      // Produkt laden
+      const product = await this.productsService.getProductDetail(id);
+      if (!product) {
+        this.logger.warn(`[ProductsController] Product not found: ${id}`);
+        throw new NotFoundException(`Product ${id} not found`);
+      }
+      this.logger.log(`[ProductsController] Fetched product ${id} successfully`);
+
+      // Rechte prüfen
+      if (userId !== product.createFromID) {
+        this.logger.warn(`[ProductsController] deleteProduct: current UserId is not the seller`);
+        throw new ForbiddenException('Seller has no rights to delete');
+      }
+
+      // Löschen
+      const success = await this.productsService.delete(id);
+      if (!success) {
+        this.logger.warn(`[ProductsController] Delete failed: product ${id} not deleted`);
+        throw new InternalServerErrorException(`Product ${id} could not be deleted`);
+      }
+
+      // Erfolg
+      this.logger.log(`[ProductsController] Product ${id} deleted successfully`);
+      return; // Nest interpretiert void als 204 No Content
+
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      this.logger.error(`[ProductsController] Error deleting product ${id}: ${message}`);
+      throw err instanceof HttpException
+        ? err
+        : new InternalServerErrorException(message);
+    }
   }
-
-  const success = await this.productsService.delete(id);
-  if (!success) {
-    this.logger.warn(`[ProductsController] Product not found: ${id}`);
-    throw new NotFoundException(`Product ${id} not found`);
-  }
-
-  this.logger.log(`[ProductsController] Product ${id} deleted successfully`);
-  return; // Nest interpretiert void als 204 No Content
-}
 
   // --------------------
-// Update UserData
-// --------------------
-@Patch('updateProductData')
-@UseGuards(SellerGuard)
-async updateProductData(
-  @CurrentUserId() userId: string,
-  @Body() body: ProductUpdateDTO,
-) {
+  // Update Productdata
+  // --------------------
+  @Patch('updateProductData')
+  @UseGuards(SellerGuard)
+  async updateProductData(
+    @CurrentUserId() userId: string,
+    @Body() body: ProductUpdateDTO,
+  ) {
 
-  if (!userId) {
-    this.logger.warn('[ProductsController] updateUserData: decorator has no userId found');
-    throw new InternalServerErrorException('Problem with the userId');
-  }
+    if (!userId) {
+      this.logger.warn('[ProductsController] updateUserData: decorator has no userId found');
+      throw new InternalServerErrorException('Problem with the userId');
+    }
 
-  if(userId != body.createFrom) {
-    this.logger.warn('[ProductsController] updateUserData: current Userid is not the Seller from the Product');
-    throw new ForbiddenException('Seller has no rights to update');
-  }
+    if(userId != body.createFrom) {
+      this.logger.warn('[ProductsController] updateUserData: current Userid is not the Seller from the Product');
+      throw new ForbiddenException('Seller has no rights to update');
+    }
 
-  const success = await this.productsService.updateProduct(
-    body
-  );
-
-  if (!success) {
-    this.logger.warn(
-      `[ProductsController] updateProductData: Problem by updating Data from Product ${body.id}`
+    const success = await this.productsService.updateProduct(
+      body
     );
-    throw new BadRequestException('Problem with updating');
+
+    if (!success) {
+      this.logger.warn(
+        `[ProductsController] updateProductData: Problem by updating Data from Product ${body.id}`
+      );
+      throw new BadRequestException('Problem with updating');
+    }
+
+    this.logger.log(
+      `[ProductsController] updateProductData: ProductData updated for userId ${body.id}`
+    );
+
+    return { message: 'ProductData updated successfully' };
   }
-
-  this.logger.log(
-    `[ProductsController] updateProductData: ProductData updated for userId ${body.id}`
-  );
-
-  return { message: 'ProductData updated successfully' };
-}
 
 }
