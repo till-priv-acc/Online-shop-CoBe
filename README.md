@@ -4,11 +4,11 @@ Ein Beispiel-Online-Shop mit **Next.js** im Frontend und **NestJS** im Backend, 
 
 ## Anstehende Features
 
-- Admin-Funktion: **Nutzer löschen**  
+- Admin-Funktion: **Nutzer löschen** 
+- Produkt Detail
+  - Updaten der Bilder des Produktes
 - Navigation über eine **Navbar**  
 - Grundlegende Warenfunktionen:
-  - **Produktanzeige:** Übersicht aller verfügbaren Produkte  
-  - **Produktdetails:** Detailansicht einzelner Produkte  
   - **Warenkorb-Funktion:** Produkte in den Warenkorb legen  
   - **Filter & Suche:** Produkte nach Kategorien, Name oder Preis filtern  
   - **Bestellung drucken:** Möglichkeit, den aktuellen Warenkorb als Bestellung zu drucken 
@@ -70,10 +70,20 @@ Backend unter http://localhost:3001
 ![User Bereich](./screenshots/user-details.png)
 
 **User-Detailbereich**  
-Aktuell werden hier Pro-Forma-Invoices dargestellt.
+Aktuell werden hier Pro-Forma-Invoices dargestellt und die Userdaten.
 
 ![Admin User Tabelle](./screenshots/user-table.png)
 
 **Admin-Bereich – User-Tabelle**  
 Zentrale Übersicht aller registrierten Nutzer.  
 Es stehen aktuell **2 Filtermöglichkeiten** sowie **3 Sortieroptionen** zur Verfügung.
+
+![Alle Produkte](./screenshots/products.png)
+
+**Produkt Bereich**  
+Hier werden einmal alle Produkte dargestellt
+
+![Produkt Detail](./screenshots/product-detail.png)
+
+**User-Detailbereich**  
+Produkt Detail Daten und Aktionen wie upadte und Delete
