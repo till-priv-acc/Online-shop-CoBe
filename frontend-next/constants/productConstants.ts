@@ -40,3 +40,13 @@ export class ProductDBDTO {
 interface PictureCallDto {
   fileName: string;
 }
+
+export interface AllProducts {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  isAvailible: boolean;
+  createFrom: string;
+  pictures?: string;
+}

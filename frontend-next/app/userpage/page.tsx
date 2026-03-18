@@ -10,6 +10,7 @@ import AdminUserTable from "@/components/admin/AdminUserTable";
 import { Box, Typography, Divider, CircularProgress } from "@mui/material";
 import { api } from "../../lib/api";
 import { UserAcc } from "@/constants/userConstants";
+import NavbarLong from "@/components/navbar/NavbarLong";
 
 interface Invoice {
   id: string;
@@ -32,11 +33,14 @@ export default function ProfilePage() {
       router.push("/authSites/login");
       return null;
     }
+
     const res = await api.get("/users/me");
     return res.data;
   });
 
   const headerImage = error ? "/images/pb-error.png" : "/images/pb-success.png";
+
+  const userRole = user?.type;
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -71,6 +75,8 @@ export default function ProfilePage() {
       )}
 
       {user && (
+        <>
+        {userRole && <NavbarLong userRole={userRole} />}
         <Box
           sx={{
             display: "flex",
@@ -208,6 +214,7 @@ export default function ProfilePage() {
             )}
           </Box>
         </Box>
+      </>
       )}
     </Box>
   );

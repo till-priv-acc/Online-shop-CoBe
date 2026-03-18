@@ -1,18 +1,29 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Box } from "@mui/material";
 import {api} from "@/lib/api";
 import ProductUpload from "./components/ProductUpload";
+import { UserRole } from "@/constants/userConstants";
+import NavbarLong from "@/components/navbar/NavbarLong";
 
 export default function ProductPage() {
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
+
   const router = useRouter();
 
   useEffect(() => {
     const checkSeller = async () => {
       try {
-        await api.get("/users/check-seller");
+        const check = await api.get("/users/check-session");
+        
+        if (!check.data.loggedIn) {
+          router.push("/authSites/login");
+          return;
+        }
+        // UserRole direkt aus check-session
+        setUserRole(check.data.role);
       } catch (err: unknown) {
         if (typeof err === "object" && err !== null && "response" in err) {
           const error = err as { response?: { status?: number } };
@@ -21,6 +32,7 @@ export default function ProductPage() {
             router.push("/product");
             return;
           }
+
         }
 
         console.error("Seller Check fehlgeschlagen", err);
@@ -45,6 +57,8 @@ export default function ProductPage() {
           boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
         }}
       />
+
+      {userRole && <NavbarLong userRole={userRole} />}
 
       {/* Container für ProductUpload, zentriert */}
       <Box

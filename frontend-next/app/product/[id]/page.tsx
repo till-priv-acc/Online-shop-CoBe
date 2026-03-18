@@ -10,6 +10,8 @@ import { api } from '@/lib/api';
 import { ProductDBDTO, productCategoryColors } from '@/constants/productConstants';
 import ProductUpdate from "./components/ProductUpdate"
 import ProductDelete from './components/ProductDelete';
+import { UserRole } from '@/constants/userConstants';
+import NavbarLong from '@/components/navbar/NavbarLong';
 
 export default function ProductDetailPage() {
   const router = useRouter();
@@ -17,17 +19,18 @@ export default function ProductDetailPage() {
   const id = params.id;
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
 
-  const fetcher = async (): Promise<{ product: ProductDBDTO; userRole: string, userid: string } | null> => {
+  const fetcher = async (): Promise<{ product: ProductDBDTO; userid: string } | null> => {
     const check = await api.get('/users/check-session');
     if (!check.data.loggedIn) {
       router.push('/authSites/login');
       return null;
     }
     const userid: string = check.data.userId || '';
-    const userRole: string = check.data.role || '';
+    setUserRole(check.data.role)
     const res = await api.get<ProductDBDTO>(`/products/product/${id}`);
-    return { product: res.data, userRole, userid };
+    return { product: res.data, userid };
   };
 
   const { data, error, isLoading, mutate } = useSWR(id ? `/products/product/${id}` : null, fetcher);
@@ -36,7 +39,7 @@ export default function ProductDetailPage() {
   if (error) return <p>Fehler beim Laden des Produkts</p>;
   if (!data) return null;
 
-  const { product, userRole, userid } = data;
+  const { product, userid } = data;
   const imagePreviews = product.pictures?.map(pic => `/product-images/${pic.fileName}`) || [];
 
   return (
@@ -52,6 +55,8 @@ export default function ProductDetailPage() {
         mb: 4,
       }}
     />
+
+    {userRole && <NavbarLong userRole={userRole} />}
 
     {/* Produkt-Box */}
     <Box

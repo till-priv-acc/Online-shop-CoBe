@@ -25,7 +25,7 @@ export default function NavbarLong({ userRole }: NavbarProps) {
   const handleProductMenuClose = () => setProductMenuAnchor(null);
 
   return (
-    <AppBar position="static" sx={{ width: "100%" }}>
+    <AppBar position="static" sx={{ width: "100%", mb: 4}}>
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
         {/* Logo / Titel */}
         <Typography variant="h6" component={Link} href="/" sx={{ textDecoration: "none", color: "inherit" }}>
@@ -81,8 +81,20 @@ export default function NavbarLong({ userRole }: NavbarProps) {
                     }
                 }}
                 >
-                <MenuItem onClick={handleProductMenuClose} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Add fontSize="small" /> <Link href="/product/create">Create</Link>
+                <MenuItem
+                component={Link}
+                href="/product/create"
+                onClick={handleProductMenuClose}
+                sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    textDecoration: "none",
+                    color: "inherit",
+                }}
+                >
+                <Add fontSize="small" />
+                Create
                 </MenuItem>
               </Menu>
             </Box>

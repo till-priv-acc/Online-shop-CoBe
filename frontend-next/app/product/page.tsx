@@ -5,20 +5,14 @@ import { Box, Card, CardContent, CardMedia, Typography, IconButton } from '@mui/
 import SearchIcon from '@mui/icons-material/Search';
 import {api} from '@/lib/api'; // dein Axios/Api Instance
 import { useRouter } from 'next/navigation';
-
-interface AllProducts {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  isAvailible: boolean;
-  createFrom: string;
-  pictures?: string;
-}
+import { UserRole } from '@/constants/userConstants';
+import { AllProducts } from '@/constants/productConstants';
+import NavbarLong from '@/components/navbar/NavbarLong';
 
 const ProductsPage = () => {
   const router = useRouter();
   const [products, setProducts] = useState<AllProducts[]>([]);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -29,6 +23,8 @@ const ProductsPage = () => {
           router.push("/authSites/login");
           return;
         }
+        // UserRole direkt aus check-session
+        setUserRole(check.data.role);
 
         const res = await api.get<AllProducts[]>("products/allProducts");
         setProducts(res.data);
@@ -67,6 +63,8 @@ const ProductsPage = () => {
         boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
       }}
     />
+
+    {userRole && <NavbarLong userRole={userRole} />}
 
       {/* 70%-Container zentriert */}
       <Box
