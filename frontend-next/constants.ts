@@ -7,9 +7,9 @@ export const allCountries = [
   "Antigua und Barbuda",
   "Argentinien",
   "Armenien",
-  "Australien",
-  "Österreich",
   "Aserbaidschan",
+  "Australien",
+  "Ägypten",
   "Bahamas",
   "Bahrain",
   "Bangladesch",
@@ -27,75 +27,67 @@ export const allCountries = [
   "Bulgarien",
   "Burkina Faso",
   "Burundi",
-  "Kambodscha",
-  "Kamerun",
-  "Kanada",
-  "Kap Verde",
-  "Zentralafrikanische Republik",
-  "Tschad",
   "Chile",
   "China",
-  "Kolumbien",
-  "Komoren",
-  "Kongo (Republik)",
-  "Demokratische Republik Kongo",
   "Costa Rica",
-  "Kroatien",
-  "Kuba",
-  "Zypern",
-  "Tschechien",
-  "Dänemark",
-  "Dschibuti",
+  "Demokratische Republik Kongo",
+  "Deutschland",
   "Dominica",
   "Dominikanische Republik",
+  "Dschibuti",
+  "Dänemark",
   "Ecuador",
-  "Ägypten",
   "El Salvador",
-  "Äquatorialguinea",
+  "Elfenbeinküste",
   "Eritrea",
   "Estland",
   "Eswatini",
-  "Äthiopien",
   "Fidschi",
   "Finnland",
   "Frankreich",
   "Gabun",
   "Gambia",
   "Georgien",
-  "Deutschland",
   "Ghana",
-  "Griechenland",
   "Grenada",
+  "Griechenland",
   "Guatemala",
   "Guinea",
   "Guinea-Bissau",
   "Guyana",
   "Haiti",
   "Honduras",
-  "Ungarn",
-  "Island",
   "Indien",
   "Indonesien",
-  "Iran",
   "Irak",
+  "Iran",
   "Irland",
+  "Island",
   "Israel",
   "Italien",
-  "Elfenbeinküste",
   "Jamaika",
   "Japan",
+  "Jemen",
   "Jordanien",
+  "Kambodscha",
+  "Kamerun",
+  "Kanada",
+  "Kap Verde",
   "Kasachstan",
+  "Katar",
   "Kenia",
-  "Kiribati",
-  "Nordkorea",
-  "Südkorea",
-  "Kuwait",
   "Kirgisistan",
+  "Kiribati",
+  "Kolumbien",
+  "Komoren",
+  "Kongo (Republik)",
+  "Kroatien",
+  "Kuba",
+  "Kuwait",
   "Laos",
+  "Lesotho",
   "Lettland",
   "Libanon",
-  "Lesotho",
   "Liberia",
   "Libyen",
   "Liechtenstein",
@@ -127,9 +119,11 @@ export const allCountries = [
   "Nicaragua",
   "Niger",
   "Nigeria",
+  "Nordkorea",
   "Nordmazedonien",
   "Norwegen",
   "Oman",
+  "Österreich",
   "Pakistan",
   "Palau",
   "Panama",
@@ -139,61 +133,65 @@ export const allCountries = [
   "Philippinen",
   "Polen",
   "Portugal",
-  "Katar",
+  "Ruanda",
   "Rumänien",
   "Russland",
-  "Ruanda",
-  "St. Kitts und Nevis",
-  "St. Lucia",
-  "St. Vincent und die Grenadinen",
+  "Salomonen",
+  "Sambia",
   "Samoa",
   "San Marino",
-  "São Tomé und Príncipe",
   "Saudi-Arabien",
+  "Schweden",
+  "Schweiz",
   "Senegal",
   "Serbien",
   "Seychellen",
   "Sierra Leone",
+  "Simbawe",
   "Singapur",
   "Slowakei",
   "Slowenien",
-  "Salomonen",
   "Somalia",
-  "Südafrika",
-  "Südsudan",
   "Spanien",
   "Sri Lanka",
+  "St. Kitts und Nevis",
+  "St. Lucia",
+  "St. Vincent und die Grenadinen",
   "Sudan",
   "Suriname",
-  "Schweden",
-  "Schweiz",
   "Syrien",
-  "Taiwan",
+  "São Tomé und Príncipe",
+  "Südafrika",
+  "Südkorea",
+  "Südsudan",
   "Tadschikistan",
+  "Taiwan",
   "Tansania",
   "Thailand",
   "Timor-Leste",
   "Togo",
   "Tonga",
   "Trinidad und Tobago",
+  "Tschad",
+  "Tschechien",
   "Tunesien",
-  "Türkei",
   "Turkmenistan",
   "Tuvalu",
+  "Türkei",
   "Uganda",
   "Ukraine",
-  "Vereinigte Arabische Emirate",
-  "Vereinigtes Königreich",
-  "Vereinigte Staaten",
+  "Ungarn",
   "Uruguay",
   "Usbekistan",
   "Vanuatu",
   "Vatikanstadt",
   "Venezuela",
+  "Vereinigte Arabische Emirate",
+  "Vereinigte Staaten",
+  "Vereinigtes Königreich",
   "Vietnam",
-  "Jemen",
-  "Sambia",
-  "Simbawe"
+  "Zentralafrikanische Republik",
+  "Zypern"
 ];
 
 export interface UserAcc {
@@ -201,10 +199,53 @@ export interface UserAcc {
   firstname: string;
   name: string;
   email: string;
-  isAdmin: boolean;
+  type: string;
   street: string;
   hNumber: string;
   pCode: string;
   town: string;
   country: string;
+}
+
+export const productMaterials = ["Holz", "Metall", "Kunststoff", "Stoff", "Halbmetall"];
+export const productColors = ["Rot", "Blau", "Grün", "Schwarz", "Weiß", "Beige", "Hellblau", "Braun", "Dunkelbraun", "Hellbraun", "Rosa", "Lila", "Hellgrün"];
+export const prodouctCategories = ["Dekoration", "Möbel", "Spielzeug", "Küche", "Auto Zubehör", "Fashion", "Elektronik", "Haustier Zubehör", "Beauty und Gesundheit"];
+
+export const productCategoryColors: Record<string, string> = {
+  "Dekoration": "#FFB6C1",
+  "Möbel": "#8B4513",
+  "Spielzeug": "#FFD700",
+  "Küche": "#FF6347",
+  "Auto Zubehör": "#4682B4",
+  "Fashion": "#DA70D6",
+  "Elektronik": "#20B2AA",
+  "Haustier Zubehör": "#90EE90",
+  "Beauty und Gesundheit": "#FF69B4",
+};
+
+export class ProductDBDTO {
+  id!: string;                  // UUID
+  name!: string;                // Produktname
+  description!: string;
+  crowd!: number;
+  minCrowd!: number;
+  price!: number;
+  deliverable!: number;         // Lieferzeit in Tagen
+  deliverableAbroad!: number;   // Lieferzeit ins Ausland
+  material!: string;
+  color!: string;
+  category!: string;
+  isAvailible!: boolean;
+  createFrom!: string;          // User-ID (Fremdschlüssel)
+  createFromID!: string;
+  createFromAdress!: string;
+  pictures?: PictureCallDto[]; // optional
+
+  constructor(partial: Partial<ProductDBDTO>) {
+    Object.assign(this, partial);
+  }
+}
+
+interface PictureCallDto {
+  fileName: string;
 }

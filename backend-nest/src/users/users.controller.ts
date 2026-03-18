@@ -7,6 +7,7 @@ import type { Session } from 'express-session';
 import { AuthGuard } from './guards/auth.guard';
 import { AdminGuard } from './guards/admin.guard';
 import { CurrentUserId } from './decorators/current-user-id.decorater';
+import { SellerGuard } from './guards/seller.guard';
 
 @Controller('users')
 export class UsersController {
@@ -101,6 +102,28 @@ export class UsersController {
   ) {
     const loggedIn = !!req.session.userId;
     this.logger.log(`[UsersController] Check-cookie: loggedIn=${loggedIn}`);
+
+    if (!loggedIn) {
+      return { loggedIn };
+    }
+
+    // userId ist hier garantiert vorhanden, also sicherer Non-null Assertion
+    const user = await this.usersService.findById(req.session.userId!);
+
+    return {
+      loggedIn,
+      role: user?.type ?? null,
+      userId: req.session.userId!, // <-- hier hinzufügen
+    };
+  }
+
+  @Get('check-seller')
+  @UseGuards(SellerGuard)
+  async checkSeller(
+    @Req() req: Request & { session: Session & { userId?: string } }
+  ) {
+    const loggedIn = !!req.session.userId;
+    this.logger.log(`[UsersController] Check-cookie: loggedIn=${loggedIn}`);
     return { loggedIn };
   }
 
@@ -108,6 +131,7 @@ export class UsersController {
   // Get current user
   // --------------------
   @Get('me')
+  @UseGuards(AuthGuard)
   async getUserData(
     @Req() req: Request & { session: Session & { userId?: string } }
   ) {
@@ -185,7 +209,7 @@ async updateUserRole(
 
   const success = await this.usersService.updateUserRole(
     body.userId,
-    body.isAdmin
+    body.type
   );
 
   if (!success) {

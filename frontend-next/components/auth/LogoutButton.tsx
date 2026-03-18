@@ -3,7 +3,7 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@mui/material";
-import { api } from "../lib/api";
+import { api } from "@/lib/api";
 
 export default function LogoutButton() {
   const router = useRouter();

@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import useSWR from "swr";
-import LogoutButton from "../../components/LogoutButton";
-import PasswordChangeButtonModal from "@/components/PasswordChangeModal";
-import UpdateUserDataModal from "@/components/UpdateUserDataModal";
-import AdminUserTable from "@/components/AdminUserTable";
+import { useRouter } from "next/navigation";
+import LogoutButton from "../../components/auth/LogoutButton";
+import PasswordChangeButtonModal from "@/components/usermanagement/PasswordChangeModal";
+import UpdateUserDataModal from "@/components/usermanagement/UpdateUserDataModal";
+import AdminUserTable from "@/components/usermanagement/AdminUserTable";
 import { Box, Typography, Divider, CircularProgress } from "@mui/material";
 import { api } from "../../lib/api";
 import { UserAcc } from "@/constants";
@@ -17,6 +18,7 @@ interface Invoice {
 }
 
 export default function ProfilePage() {
+  const router = useRouter();
   const [error, setError] = useState<string>("");
   const [invoices] = useState<Invoice[]>([
     { id: "1", number: "INV-001", amount: "150€" },
@@ -27,7 +29,7 @@ export default function ProfilePage() {
   const { data: user, mutate } = useSWR<UserAcc>("/users/me", async () => {
     const check = await api.get("/users/check-session");
     if (!check.data.loggedIn) {
-      window.location.href = "/login";
+      router.push("/login");
       return null;
     }
     const res = await api.get("/users/me");
@@ -37,7 +39,7 @@ export default function ProfilePage() {
   const headerImage = error ? "/images/pb-error.png" : "/images/pb-success.png";
 
   return (
-    <Box sx={{ maxWidth: 1600, mx: "auto", px: 3, py: 4 }}>
+    <Box sx={{ width: "100%" }}>
       {/* Header */}
       <Box
         sx={{
@@ -62,7 +64,6 @@ export default function ProfilePage() {
         </Box>
       )}
 
-      {/* Loader nur innerhalb des Layouts */}
       {!user && !error && (
         <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: 200 }}>
           <CircularProgress />
@@ -70,9 +71,31 @@ export default function ProfilePage() {
       )}
 
       {user && (
-        <Box>
-          <Box>
-            <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 6 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            width: "100%",
+          }}
+        >
+          {/* Haupt-Container: 70% der RootLayout-Breite */}
+          <Box
+            sx={{
+              width: "70%",
+              display: "flex",
+              flexDirection: "column",
+              gap: 6,
+            }}
+          >
+            {/* Linke und rechte Box */}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", md: "row" },
+                gap: 6,
+                width: "100%",
+              }}
+            >
               {/* Linke Box */}
               <Box
                 sx={{
@@ -87,10 +110,9 @@ export default function ProfilePage() {
                   minWidth: 300,
                 }}
               >
-                {/* Profilbild */}
                 <Box
                   component="img"
-                  src={user.isAdmin ? "/images/admin-profile.png" : "/images/user-profile.png"}
+                  src={`/images/${user.type}-profile.png`}
                   alt="Profilbild"
                   sx={{
                     width: 140,
@@ -119,7 +141,7 @@ export default function ProfilePage() {
                     </Typography>
 
                     <Typography variant="body2" color="text.secondary">Rolle:</Typography>
-                    <Typography variant="body1" fontWeight={600}>{user.isAdmin ? "ADMIN" : "USER"}</Typography>
+                    <Typography variant="body1" fontWeight={600}>{user.type}</Typography>
                   </Box>
                 </Box>
 
@@ -136,10 +158,7 @@ export default function ProfilePage() {
                 <Box sx={{ mt: "auto", display: "flex", flexDirection: "column", gap: 2 }}>
                   <LogoutButton />
                   <PasswordChangeButtonModal />
-                  <UpdateUserDataModal 
-                    initialData={user!} 
-                    onSuccess={() => mutate()} 
-                  />
+                  <UpdateUserDataModal initialData={user!} onSuccess={() => mutate()} />
                 </Box>
               </Box>
 
@@ -155,6 +174,7 @@ export default function ProfilePage() {
                   background: "#fff",
                   boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                   minWidth: 300,
+                  width: "100%", // sorgt dafür, dass Rechte Box immer volle Breite des Containers einnimmt
                 }}
               >
                 <Typography variant="h6">Rechnungen</Typography>
@@ -177,17 +197,16 @@ export default function ProfilePage() {
                     <Typography variant="body1" color="primary"><strong>Betrag:</strong> {inv.amount}</Typography>
                   </Box>
                 ))}
-
-                <Divider sx={{ mt: 2 }} />
-                <Typography>Weitere pro forma Einträge...</Typography>
               </Box>
             </Box>
+
+            {/* AdminUserTable: volle Breite wie die oberste Flex-Row */}
+            {user.type === "ADMIN" && (
+              <Box sx={{ mt: 4, width: "100%" }}>
+                <AdminUserTable />
+              </Box>
+            )}
           </Box>
-          {user.isAdmin && (
-            <Box sx={{ mt: 4 }}>  {/* Abstand nach oben */}
-              <AdminUserTable />
-            </Box>
-          )}
         </Box>
       )}
     </Box>

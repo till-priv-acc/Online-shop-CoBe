@@ -1,0 +1,157 @@
+import { Controller, Post, Delete, Get, HttpException, InternalServerErrorException, NotFoundException, BadRequestException, ForbiddenException, Body, UseGuards, Param, Req, Patch } from '@nestjs/common';
+import { ProductsService } from './products.service';
+import { CreateCallDTO, AllProducts, ProductDBDTO, ProductUpdateDTO } from './dto/products.dto';
+import { CurrentUserId } from '../users/decorators/current-user-id.decorater';
+import { SellerGuard } from '../users/guards/seller.guard';
+import { ProductLogger } from '../logger/product-logger.service';
+import { AuthGuard } from '../users/guards/auth.guard';
+
+@Controller('products')
+export class ProductsController {
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly logger: ProductLogger
+  ) {}
+
+  // --------------------
+  // Create Product
+  // --------------------
+
+  @Post('createproduct')
+  @UseGuards(SellerGuard)
+  async createProduct(
+    @Body() createDto: CreateCallDTO,
+    @CurrentUserId() userId: string
+  ) {
+    this.logger.log(`[ProductsController] Create product request by userId: ${userId}`);
+    const product = await this.productsService.createProduct(createDto, userId);
+    this.logger.log(`[ProductsController] Product created: ${product.name} (ID: ${product.id})`);
+    return product;
+  }
+
+  // --------------------
+  // Get All Products
+  // --------------------
+
+  @Get('allProducts')
+  @UseGuards(AuthGuard)
+  async getAllProducts(): Promise<AllProducts[]> {
+    this.logger.log(`[ProductsController] GET /allProducts called`);
+    try {
+      const products = await this.productsService.getAllProducts();
+      this.logger.log(`[ProductsController] Fetched ${products.length} products`);
+      return products;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      this.logger.error(`[ProductsController] Error fetching all products: ${message}`);
+      throw new InternalServerErrorException(message);
+    }
+  }
+
+  // --------------------
+  // Get Product Detail
+  // --------------------
+
+  @Get('product/:id')
+  @UseGuards(AuthGuard)
+  async getProduct(
+    @Param('id') id: string,
+  ): Promise<ProductDBDTO> {
+    this.logger.log(`[ProductsController] GET /product/${id} called`);
+    try {
+      const product = await this.productsService.getProductDetail(id);
+      this.logger.log(`[ProductsController] Fetched product ${id} successfully`);
+      return product;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      this.logger.error(`[ProductsController] Error fetching product ${id}: ${message}`);
+      throw new InternalServerErrorException(message);
+    }
+  }
+
+  // --------------------
+  // Delete Product
+  // --------------------
+
+  @Delete('product/:id')
+  @UseGuards(SellerGuard)
+  async deleteProduct(
+    @CurrentUserId() userId: string,
+    @Param('id') id: string,
+  ): Promise<void> {
+    this.logger.log(`[ProductsController] Delete /product/${id} called`);
+
+    try {
+      // Produkt laden
+      const product = await this.productsService.getProductDetail(id);
+      if (!product) {
+        this.logger.warn(`[ProductsController] Product not found: ${id}`);
+        throw new NotFoundException(`Product ${id} not found`);
+      }
+      this.logger.log(`[ProductsController] Fetched product ${id} successfully`);
+
+      // Rechte prüfen
+      if (userId !== product.createFromID) {
+        this.logger.warn(`[ProductsController] deleteProduct: current UserId is not the seller`);
+        throw new ForbiddenException('Seller has no rights to delete');
+      }
+
+      // Löschen
+      const success = await this.productsService.delete(id);
+      if (!success) {
+        this.logger.warn(`[ProductsController] Delete failed: product ${id} not deleted`);
+        throw new InternalServerErrorException(`Product ${id} could not be deleted`);
+      }
+
+      // Erfolg
+      this.logger.log(`[ProductsController] Product ${id} deleted successfully`);
+      return; // Nest interpretiert void als 204 No Content
+
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      this.logger.error(`[ProductsController] Error deleting product ${id}: ${message}`);
+      throw err instanceof HttpException
+        ? err
+        : new InternalServerErrorException(message);
+    }
+  }
+
+  // --------------------
+  // Update Productdata
+  // --------------------
+  @Patch('updateProductData')
+  @UseGuards(SellerGuard)
+  async updateProductData(
+    @CurrentUserId() userId: string,
+    @Body() body: ProductUpdateDTO,
+  ) {
+
+    if (!userId) {
+      this.logger.warn('[ProductsController] updateUserData: decorator has no userId found');
+      throw new InternalServerErrorException('Problem with the userId');
+    }
+
+    if(userId != body.createFrom) {
+      this.logger.warn('[ProductsController] updateUserData: current Userid is not the Seller from the Product');
+      throw new ForbiddenException('Seller has no rights to update');
+    }
+
+    const success = await this.productsService.updateProduct(
+      body
+    );
+
+    if (!success) {
+      this.logger.warn(
+        `[ProductsController] updateProductData: Problem by updating Data from Product ${body.id}`
+      );
+      throw new BadRequestException('Problem with updating');
+    }
+
+    this.logger.log(
+      `[ProductsController] updateProductData: ProductData updated for userId ${body.id}`
+    );
+
+    return { message: 'ProductData updated successfully' };
+  }
+
+}

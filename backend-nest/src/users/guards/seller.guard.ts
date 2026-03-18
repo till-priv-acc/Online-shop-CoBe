@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, Injectable, UnauthorizedException, Forbi
 import { UsersService } from '../users.service';
 
 @Injectable()
-export class AdminGuard implements CanActivate {
+export class SellerGuard implements CanActivate {
   constructor(private readonly usersService: UsersService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -21,7 +21,7 @@ export class AdminGuard implements CanActivate {
     }
 
     // Prüfung auf type "ADMIN" statt isAdmin
-    if (user.type != 'ADMIN') {
+    if (user.type != 'SELLER') {
       throw new ForbiddenException('Access denied. Admin only.');
     }
 

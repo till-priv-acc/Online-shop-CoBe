@@ -1,0 +1,147 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { Box, Card, CardContent, CardMedia, Typography, IconButton } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import {api} from '@/lib/api'; // dein Axios/Api Instance
+import { useRouter } from 'next/navigation';
+
+interface AllProducts {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  isAvailible: boolean;
+  createFrom: string;
+  pictures?: string;
+}
+
+const ProductsPage = () => {
+  const router = useRouter();
+  const [products, setProducts] = useState<AllProducts[]>([]);
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const check = await api.get("/users/check-session");
+
+        if (!check.data.loggedIn) {
+          router.push("/login");
+          return;
+        }
+
+        const res = await api.get<AllProducts[]>("products/allProducts");
+        setProducts(res.data);
+
+        res.data.forEach((p) =>
+          console.log("Bildname:", p.pictures ?? "Kein Bild")
+        );
+      } catch (err) {
+        if (typeof err === "object" && err !== null && "response" in err) {
+          const error = err as { response?: { status?: number } };
+
+          if (error.response?.status === 401) {
+            router.push("/login");
+            return;
+          }
+        }
+        console.error("Fehler beim Laden der Produkte", err);
+      }
+    };
+
+    init();
+  }, []);
+
+  return (
+    <Box sx={{ width: "100%" }}>
+    {/* Header */}
+    <Box
+      sx={{
+        width: "100%",
+        height: 220,
+        borderRadius: 0,
+        backgroundImage: `url("/images/product-page.png")`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        mb: 6,
+        boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+      }}
+    />
+
+      {/* 70%-Container zentriert */}
+      <Box
+        sx={{
+          width: "70%",
+          margin: "0 auto",
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 4,
+          justifyContent: "center",
+        }}
+      >
+        {products.map((product) => {
+          const imagePath = product.pictures
+            ? `/product-images/${product.pictures}`
+            : "/images/placeholder.png";
+
+          return (
+            <Card
+              key={product.id}
+              sx={{
+                width: 250,
+                display: "flex",
+                flexDirection: "column",
+                flexShrink: 0,
+                position: "relative",
+              }}
+            >
+              <CardMedia
+                component="img"
+                height="140"
+                image={imagePath}
+                alt={product.name}
+                onError={(e: any) => {
+                  e.target.onerror = null;
+                  e.target.src = "/images/placeholder.png";
+                }}
+              />
+
+              {/* Lupen-Button oben rechts */}
+              <IconButton
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  backgroundColor: "rgba(255,255,255,0.8)",
+                  "&:hover": { backgroundColor: "rgba(255,255,255,1)" },
+                }}
+                onClick={() => router.push(`/product/${product.id}`)}
+              >
+                <SearchIcon />
+              </IconButton>
+
+              <CardContent>
+                <Typography variant="h6">{product.name}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Verkäufer: {product.createFrom}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Kategorie: {product.category}
+                </Typography>
+                <Typography variant="body1">Preis: €{product.price}</Typography>
+                <Typography
+                  variant="body2"
+                  color={product.isAvailible ? "green" : "red"}
+                >
+                  {product.isAvailible ? "Verfügbar" : "Nicht verfügbar"}
+                </Typography>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </Box>
+    </Box>
+  );
+};
+
+export default ProductsPage;
