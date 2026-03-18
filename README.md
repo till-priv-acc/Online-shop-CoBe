@@ -53,17 +53,74 @@ Backend unter http://localhost:3001
 
 ```text
   /frontend
-    /pages
-      /login
-      /products
-    
-      /admin
+    /api
+    /login
+    /userpage
+    /product
+      /create
+      /[id]
+  /lib
+  /components
+  /constants
+  /public
+
   /backend
     /src
       /users
+        /entity
       /products
-      /admin
+        /entity
+        /DTO
 ```
+
+## Aufbau Struktur
+
+### Frontend
+
+- **/api**  
+  Enthält interne Next.js API-Routen, für Bild Uploads oder löschen
+
+- **/login**  
+  Seiten für Login-Funktionalität.
+
+- **/userpage**  
+  Seiten für User-Dashboard oder Profilansichten.
+
+- **/product**  
+  Enthält alles rund um Produktseiten:  
+  - `/create` → Seite zum Anlegen neuer Produkte  
+  - `/[id]` → dynamische Route für einzelne Produktdetails oder Editieren
+
+- **/components**  
+  Seiten für User-Dashboard oder Profilansichten.
+
+- **/lib**  
+  Allgemeine Bibliotheken, Hooks oder Utilities, z. B. API-Clients, Form-Handler, Auth-Helper.
+
+- **/constants**  
+  Globale Konstanten wie Farbwerte, Kategorien, Enum-Typen, Rollen etc.
+
+- **/public**  
+  Statische Dateien wie Bilder, Icons, Fonts, die direkt vom Frontend geladen werden.
+
+---
+
+## Backend
+
+- **/src/users/entity**  
+  Datenbank-Entities für User (TypeORM), z. B. `UserEntity`.  
+  Definiert Tabellenstruktur und Relations zu anderen Entities.
+
+- **/src/products/entity**  
+  Datenbank-Entities für Produkte (TypeORM), z. B. `ProductEntity` und `PictureEntity`.  
+  Enthält Spalten, Primärschlüssel, Foreign Keys, Relation-Optionen (z. B. `CASCADE`).
+
+- **/src/products/DTO**  
+  Data Transfer Objects für Produkte, z. B.:  
+  - `ProductCreateDTO`  
+  - `ProductUpdateDTO`  
+  - `PictureCallDTO`  
+  Diese definieren die Datenstruktur für Requests und Responses zwischen Frontend und Backend.
 
 ## Aktuelle Bilder
 
