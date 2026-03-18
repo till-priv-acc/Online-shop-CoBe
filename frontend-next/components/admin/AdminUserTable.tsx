@@ -8,7 +8,7 @@ import {
   IconButton, TextField, MenuItem, Snackbar, Alert 
 } from "@mui/material";
 import { AdminPanelSettings, Person, ArrowUpward, ArrowDownward, Store } from "@mui/icons-material";
-import { UserAcc } from "@/constants";
+import { UserAcc } from "@/constants/userConstants";
 
 // Mapping: type → Icon-Komponente
 const roleIcons = {

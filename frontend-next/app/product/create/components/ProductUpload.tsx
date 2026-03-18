@@ -5,10 +5,10 @@ import { Box, Divider, TextField, Button, MenuItem, FormControl, InputLabel, Typ
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { api } from "../../lib/api";
+import { api } from "@/lib/api";
 import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
-import { prodouctCategories, productColors, productMaterials } from "@/constants";
+import { prodouctCategories, productColors, productMaterials } from "@/constants/productConstants";
 
 const materials = productMaterials;
 const colors = productColors;

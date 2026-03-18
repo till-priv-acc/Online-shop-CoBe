@@ -90,7 +90,7 @@ export default function LoginForm() {
     <Typography variant="body2" mt={3} textAlign="center">
       Noch kein Konto?{" "}
       <Link
-        href="/register"
+        href="/authSites/register"
         style={{
           textDecoration: "none",
           fontWeight: 600,

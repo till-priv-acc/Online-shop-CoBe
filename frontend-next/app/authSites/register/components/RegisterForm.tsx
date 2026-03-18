@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
-import { allCountries } from "@/constants";
+import { allCountries, userTypesCreate } from "@/constants/userConstants";
 
 interface RegisterFormData {
   name: string;
@@ -25,7 +25,7 @@ interface RegisterFormData {
   type: string; // explizit drin
 }
 
-const userTypes = ["USER", "SELLER"];
+const userTypes = userTypesCreate
 
 export default function RegisterForm() {
   const router = useRouter();

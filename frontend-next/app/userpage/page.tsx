@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { useRouter } from "next/navigation";
 import LogoutButton from "../../components/auth/LogoutButton";
-import PasswordChangeButtonModal from "@/components/usermanagement/PasswordChangeModal";
-import UpdateUserDataModal from "@/components/usermanagement/UpdateUserDataModal";
-import AdminUserTable from "@/components/usermanagement/AdminUserTable";
+import PasswordChangeButtonModal from "./components/PasswordChangeModal";
+import UpdateUserDataModal from "./components/UpdateUserDataModal";
+import AdminUserTable from "@/components/admin/AdminUserTable";
 import { Box, Typography, Divider, CircularProgress } from "@mui/material";
 import { api } from "../../lib/api";
-import { UserAcc } from "@/constants";
+import { UserAcc } from "@/constants/userConstants";
 
 interface Invoice {
   id: string;
@@ -29,7 +29,7 @@ export default function ProfilePage() {
   const { data: user, mutate } = useSWR<UserAcc>("/users/me", async () => {
     const check = await api.get("/users/check-session");
     if (!check.data.loggedIn) {
-      router.push("/login");
+      router.push("/authSites/login");
       return null;
     }
     const res = await api.get("/users/me");

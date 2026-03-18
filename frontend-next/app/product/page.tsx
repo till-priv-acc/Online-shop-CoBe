@@ -26,7 +26,7 @@ const ProductsPage = () => {
         const check = await api.get("/users/check-session");
 
         if (!check.data.loggedIn) {
-          router.push("/login");
+          router.push("/authSites/login");
           return;
         }
 

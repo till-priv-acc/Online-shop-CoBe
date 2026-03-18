@@ -7,9 +7,9 @@ import { Box, Typography, IconButton, Divider, Chip } from '@mui/material';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { api } from '@/lib/api';
-import { ProductDBDTO, productCategoryColors } from '@/constants';
-import ProductUpdate from "@/components/productmanagement/ProductUpdate"
-import ProductDelete from '@/components/productmanagement/ProductDelete';
+import { ProductDBDTO, productCategoryColors } from '@/constants/productConstants';
+import ProductUpdate from "./components/ProductUpdate"
+import ProductDelete from './components/ProductDelete';
 
 export default function ProductDetailPage() {
   const router = useRouter();
@@ -21,7 +21,7 @@ export default function ProductDetailPage() {
   const fetcher = async (): Promise<{ product: ProductDBDTO; userRole: string, userid: string } | null> => {
     const check = await api.get('/users/check-session');
     if (!check.data.loggedIn) {
-      router.push('/login');
+      router.push('/authSites/login');
       return null;
     }
     const userid: string = check.data.userId || '';
