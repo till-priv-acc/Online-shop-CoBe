@@ -9,6 +9,7 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { api } from '@/lib/api';
 import { ProductDBDTO, productCategoryColors } from '@/constants';
 import ProductUpdate from "@/components/productmanagement/ProductUpdate"
+import ProductDelete from '@/components/productmanagement/ProductDelete';
 
 export default function ProductDetailPage() {
   const router = useRouter();
@@ -247,6 +248,7 @@ export default function ProductDetailPage() {
           <Box sx={{width:"100%"}}>
             <Divider sx={{width: "100%", mt: 2, mb: 1 }}>Actions</Divider>
             <ProductUpdate initialData={product!} onSuccess={() => mutate()} />
+            <ProductDelete productID={product.id} productName={product.name} productPics={product.pictures?.map(f => f.fileName) || []}/>
           </Box>
         )}
 
