@@ -1,4 +1,4 @@
-import { Controller, Post, Get, InternalServerErrorException, BadRequestException, ForbiddenException, Body, UseGuards, Param, Req, Patch } from '@nestjs/common';
+import { Controller, Post, Delete, Get, InternalServerErrorException, NotFoundException, BadRequestException, ForbiddenException, Body, UseGuards, Param, Req, Patch } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateCallDTO, AllProducts, ProductDBDTO, ProductUpdateDTO } from './dto/products.dto';
 import { CurrentUserId } from '../users/decorators/current-user-id.decorater';
@@ -56,6 +56,29 @@ export class ProductsController {
       throw new InternalServerErrorException(message);
     }
   }
+
+@Delete('product/:id')
+@UseGuards(SellerGuard)
+async deleteProduct(
+  @CurrentUserId() userId: string,
+  @Param('id') id: string,
+): Promise<void> {
+  this.logger.log(`[ProductsController] Delete /product/${id} called`);
+
+  if (userId != id) {
+    this.logger.warn(`[ProductsController] deleteProduct: current UserId is not the seller`);
+    throw new ForbiddenException('Seller has no rights to delete');
+  }
+
+  const success = await this.productsService.delete(id);
+  if (!success) {
+    this.logger.warn(`[ProductsController] Product not found: ${id}`);
+    throw new NotFoundException(`Product ${id} not found`);
+  }
+
+  this.logger.log(`[ProductsController] Product ${id} deleted successfully`);
+  return; // Nest interpretiert void als 204 No Content
+}
 
   // --------------------
 // Update UserData

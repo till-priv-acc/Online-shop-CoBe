@@ -236,7 +236,7 @@ async updateProduct(productUpdateDTO: ProductUpdateDTO): Promise<boolean> {
   const prod = new ProductEntity({ ...productUpdateDTO });
   const isAvailible = prod.crowd > prod.minCrowd;
 
-  return new Promise((resolve, reject) => {
+  return new Promise<boolean>((resolve, reject) => {
     const sql = `
       UPDATE products SET
         name = ?, 
@@ -269,12 +269,82 @@ async updateProduct(productUpdateDTO: ProductUpdateDTO): Promise<boolean> {
     ];
 
     this.db.run(sql, params, function (err: Error | null) {
-      if (err) return reject(err);
+      if (err) {
+        // echter Fehler
+        reject(err);
+        return;
+      }
 
-      if (this.changes === 0) return resolve(false);
+      if (this.changes === 0) {
+        // nichts geupdated (nicht gefunden)
+        resolve(true);
+        return;
+      }
 
+      // erfolgreich geupdated
       resolve(true);
     });
+  })
+  .then((result) => {
+    if (result) {
+      this.logger.log(`[ProductsService] Product updated: ${productUpdateDTO.id}`);
+    } else {
+      this.logger.warn(`[ProductsService] Update failed - product not found: ${productUpdateDTO.id}`);
+    }
+    return result;
+  })
+  .catch((err: any) => {
+    this.logger.error(
+      `[ProductsService] Update failed for product: ${productUpdateDTO.id}`,
+      err.stack || err.message
+    );
+    throw err;
+  });
+}
+
+async delete(productID: string): Promise<boolean> {
+  const id = productID;
+
+  return new Promise<boolean>((resolve, reject) => {
+
+    const sql = `
+      DELETE FROM products WHERE id = ?
+    `;
+    const params = [id];
+
+    this.logger.log(`Delete attempt for product: ${id}`);
+
+    this.db.run(sql, params, function (err: Error | null) {
+      if (err) {
+        // echter Fehler
+        reject(err);
+        return;
+      }
+
+      if (this.changes === 0) {
+        // nichts gefunden
+        resolve(true);
+        return;
+      }
+
+      // erfolgreich gelöscht
+      resolve(true);
+    });
+  })
+  .then((result) => {
+    if (result) {
+      this.logger.log(`Product deleted: ${id}`);
+    } else {
+      this.logger.warn(`Product not found: ${id}`);
+    }
+    return result;
+  })
+  .catch((err: any) => {
+    this.logger.error(
+      `Delete failed for product: ${id}`,
+      err.stack || err.message
+    );
+    throw err;
   });
 }
 
