@@ -198,6 +198,8 @@ export type UserRole = "USER" | "SELLER" | "ADMIN";
 
 export const userTypesCreate = ["USER", "SELLER"];
 
+export const userTypesRead = ['USER', 'ADMIN', 'SELLER'] as const;
+
 export interface UserAcc {
   id: string;
   firstname: string;
@@ -210,3 +212,10 @@ export interface UserAcc {
   town: string;
   country: string;
 }
+
+export const userRolesAdminPanel = [
+  { label: "Alle", value: "" },
+  { label: "Admin", value: "ADMIN" },
+  { label: "User", value: "USER" },
+  { label: "Seller", value: "SELLER" },
+];

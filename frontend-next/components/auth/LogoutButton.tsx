@@ -11,7 +11,7 @@ export default function LogoutButton() {
   const handleLogout = async () => {
     try {
       await api.post("/users/logout");
-      router.push("/login");
+      router.push("/authSites/login");
     } catch (err) {
       console.error("Logout fehlgeschlagen", err);
     }

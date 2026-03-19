@@ -7,6 +7,7 @@ import {api} from "@/lib/api";
 import ProductUpload from "./components/ProductUpload";
 import { UserRole } from "@/constants/userConstants";
 import NavbarLong from "@/components/navbar/NavbarLong";
+import HeaderPicture from "@/components/UIElements/HeaderPicture";
 
 export default function ProductPage() {
   const [userRole, setUserRole] = useState<UserRole | null>(null);
@@ -45,25 +46,15 @@ export default function ProductPage() {
   return (
     <Box sx={{ width: "100%" }}>
       {/* Header-Bild, volle Breite */}
-      <Box
-        sx={{
-          width: "100%",
-          height: 220,
-          borderRadius: 0,
-          backgroundImage: `url("/images/product-create.png")`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          mb: 6,
-          boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
-        }}
-      />
+
+      <HeaderPicture headerPic="/images/product-create.png" />
 
       {userRole && <NavbarLong userRole={userRole} />}
 
       {/* Container für ProductUpload, zentriert */}
       <Box
         sx={{
-          width: "70%",
+          width: "100%",
           margin: "0 auto",
         }}
       >

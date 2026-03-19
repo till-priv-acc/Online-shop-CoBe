@@ -61,7 +61,6 @@ export default function NavbarLong({ userRole }: NavbarProps) {
           </Box>
 
           {/* Produkte Menü */}
-          {userRole === "SELLER" && (
             <Box onMouseEnter={handleProductMenuOpen} onMouseLeave={handleProductMenuClose}>
               <Button
                 color="inherit"
@@ -71,6 +70,7 @@ export default function NavbarLong({ userRole }: NavbarProps) {
               >
                 Produkte
               </Button>
+              {userRole === "SELLER" && (
               <Menu
                 anchorEl={productMenuAnchor}
                 open={Boolean(productMenuAnchor)}
@@ -97,8 +97,8 @@ export default function NavbarLong({ userRole }: NavbarProps) {
                 Create
                 </MenuItem>
               </Menu>
+              )}
             </Box>
-          )}
         </Box>
       </Toolbar>
     </AppBar>

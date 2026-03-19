@@ -8,7 +8,7 @@ import {
   IconButton, TextField, MenuItem, Snackbar, Alert 
 } from "@mui/material";
 import { AdminPanelSettings, Person, ArrowUpward, ArrowDownward, Store } from "@mui/icons-material";
-import { UserAcc } from "@/constants/userConstants";
+import { UserAcc, userRolesAdminPanel, userTypesRead } from "@/constants/userConstants";
 
 // Mapping: type → Icon-Komponente
 const roleIcons = {
@@ -34,6 +34,8 @@ export default function AdminUserTable() {
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState<"success" | "error">("success");
+
+  const roles = userRolesAdminPanel;
 
   const handleRoleChange = async (userId: string, newType: 'USER' | 'ADMIN' | 'SELLER') => {
   try {
@@ -63,7 +65,7 @@ export default function AdminUserTable() {
   let displayedUsers = users ?? [];
 
   if (countryFilter) displayedUsers = displayedUsers.filter(u => u.country === countryFilter);
-  if (roleFilter) displayedUsers = displayedUsers.filter(u => u.type === roleFilter.toUpperCase());
+  if (roleFilter) displayedUsers = displayedUsers.filter(u => u.type === roleFilter);
 
   displayedUsers = [...displayedUsers].sort((a, b) => {
     let valA: string = "";
@@ -116,9 +118,11 @@ export default function AdminUserTable() {
           size="small"
           sx={{ minWidth: 120 }}
         >
-          <MenuItem value="">Alle</MenuItem>
-          <MenuItem value="Admin">Admin</MenuItem>
-          <MenuItem value="User">User</MenuItem>
+          {roles.map((role) => (
+            <MenuItem key={role.value} value={role.value}>
+              {role.label}
+            </MenuItem>
+          ))}
         </TextField>
       </Box>
 
@@ -167,7 +171,7 @@ export default function AdminUserTable() {
             <TableRow key={u.id} hover sx={{ borderBottom: "1px solid #eee" }}>
               <TableCell>{u.id}</TableCell>
               <TableCell>
-                {(['USER', 'ADMIN', 'SELLER'] as const).map((role) => {
+                {userTypesRead.map((role) => {
                   const IconComp = roleIcons[role];
                   const isActive = u.type === role;
 

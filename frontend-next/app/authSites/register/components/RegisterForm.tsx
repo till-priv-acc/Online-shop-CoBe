@@ -11,6 +11,7 @@ import {
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { allCountries, userTypesCreate } from "@/constants/userConstants";
+import BoxForm from "@/components/UIElements/BoxForm";
 
 interface RegisterFormData {
   name: string;
@@ -58,7 +59,7 @@ export default function RegisterForm() {
 
     try {
       await api.post("/users/create", formData);
-      router.push("/login");
+      router.push("/authSites/login");
     } catch (err: any) {
       setError(
         err.response?.data?.message || "Registrierung fehlgeschlagen"
@@ -70,160 +71,155 @@ export default function RegisterForm() {
 
   return (
     <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      minHeight="100vh"
-      sx={{ background: "#f5f5f5" }}
-    >
-      <Box
-        component="form"
-        onSubmit={handleSubmit}
+    display="flex"
+    justifyContent="center"
+    alignItems="center"
+    minHeight="100vh"
+    sx={{ background: "#f5f5f5" }}
+  >
+    <BoxForm component="form" onSubmit={handleSubmit} sx={{ gridTemplateColumns: "repeat(2, 1fr)", gap: 2 }}>
+      {/* Überschrift über die volle Breite */}
+      <Typography variant="h4" sx={{ gridColumn: "1 / -1", textAlign: "center", mb: 3 }}>
+        Registrierung
+      </Typography>
+
+      {/* Vorname + Nachname nebeneinander */}
+      <TextField
+        label="Vorname"
+        name="firstname"
+        fullWidth
+        value={formData.firstname}
+        onChange={handleChange}
+        required
+      />
+      <TextField
+        label="Nachname"
+        name="name"
+        fullWidth
+        value={formData.name}
+        onChange={handleChange}
+        required
+      />
+
+      {/* Email */}
+      <TextField
+        label="Email"
+        name="email"
+        type="email"
+        fullWidth
+        value={formData.email}
+        onChange={handleChange}
+        required
+        sx={{ gridColumn: "1 / -1" }}
+      />
+
+      {/* Passwort */}
+      <TextField
+        label="Passwort"
+        name="password"
+        type="password"
+        fullWidth
+        value={formData.password}
+        onChange={handleChange}
+        required
+        sx={{ gridColumn: "1 / -1" }}
+      />
+
+      {/* Straße + Hausnummer nebeneinander */}
+      <TextField
+        label="Straße"
+        name="street"
+        fullWidth
+        value={formData.street}
+        onChange={handleChange}
+        required
+      />
+      <TextField
+        label="Nr."
+        name="hNumber"
+        sx={{ width: 100 }}
+        value={formData.hNumber}
+        onChange={handleChange}
+        required
+      />
+
+      {/* PLZ + Ort nebeneinander */}
+      <TextField
+        label="PLZ"
+        name="pCode"
+        sx={{ width: 120 }}
+        value={formData.pCode}
+        onChange={handleChange}
+        required
+      />
+      <TextField
+        label="Ort"
+        name="town"
+        fullWidth
+        value={formData.town}
+        onChange={handleChange}
+        required
+      />
+
+      {/* Land */}
+      <TextField
+        select
+        label="Land"
+        name="country"
+        fullWidth
+        value={formData.country}
+        onChange={handleChange}
+        required
+        sx={{ gridColumn: "1 / -1" }}
+      >
+        {countries.map((country) => (
+          <MenuItem key={country} value={country}>
+            {country}
+          </MenuItem>
+        ))}
+      </TextField>
+
+      {/* User Art */}
+      <TextField
+        select
+        label="User Art"
+        name="type"
+        fullWidth
+        value={formData.type}
+        onChange={handleChange}
+        required
+        sx={{ gridColumn: "1 / -1" }}
+      >
+        {userTypes.map((type) => (
+          <MenuItem key={type} value={type}>
+            {type}
+          </MenuItem>
+        ))}
+      </TextField>
+
+      {/* Fehleranzeige */}
+      {error && (
+        <Typography color="error" variant="body2" sx={{ gridColumn: "1 / -1", mt: 1 }}>
+          {error}
+        </Typography>
+      )}
+
+      {/* Submit Button */}
+      <Button
+        type="submit"
+        variant="contained"
+        fullWidth
         sx={{
-          width: 500,
-          p: 4,
-          borderRadius: 3,
-          background: "#fff",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+          gridColumn: "1 / -1",
+          mt: 3,
+          py: 1.2,
+          borderRadius: 2,
+          fontWeight: 600,
         }}
       >
-        <Typography variant="h4" mb={3} textAlign="center">
-          Registrierung
-        </Typography>
-
-        <Box display="flex" gap={2}>
-          <TextField
-            label="Vorname"
-            name="firstname"
-            fullWidth
-            value={formData.firstname}
-            onChange={handleChange}
-            required
-          />
-          <TextField
-            label="Nachname"
-            name="name"
-            fullWidth
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
-        </Box>
-
-        <TextField
-          label="Email"
-          name="email"
-          type="email"
-          fullWidth
-          margin="normal"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        />
-
-        <TextField
-          label="Passwort"
-          name="password"
-          type="password"
-          fullWidth
-          margin="normal"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
-
-        <Box display="flex" gap={2} mt={2}>
-          <TextField
-            label="Straße"
-            name="street"
-            fullWidth
-            value={formData.street}
-            onChange={handleChange}
-            required
-          />
-          <TextField
-            label="Nr."
-            name="hNumber"
-            sx={{ width: 100 }}
-            value={formData.hNumber}
-            onChange={handleChange}
-            required
-          />
-        </Box>
-
-        <Box display="flex" gap={2} mt={2}>
-          <TextField
-            label="PLZ"
-            name="pCode"
-            sx={{ width: 120 }}
-            value={formData.pCode}
-            onChange={handleChange}
-            required
-          />
-          <TextField
-            label="Ort"
-            name="town"
-            fullWidth
-            value={formData.town}
-            onChange={handleChange}
-            required
-          />
-        </Box>
-
-        <TextField
-          select
-          label="Land"
-          name="country"
-          fullWidth
-          margin="normal"
-          value={formData.country}
-          onChange={handleChange}
-          required
-        >
-          {countries.map((country) => (
-            <MenuItem key={country} value={country}>
-              {country}
-            </MenuItem>
-          ))}
-        </TextField>
-
-        <TextField
-          select
-          label="User Art"
-          name="type"
-          fullWidth
-          margin="normal"
-          value={formData.type}
-          onChange={handleChange}
-          required
-        >
-          {userTypes.map((type) => (
-            <MenuItem key={type} value={type}>
-              {type}
-            </MenuItem>
-          ))}
-        </TextField>
-
-        {error && (
-          <Typography color="error" variant="body2" mt={1}>
-            {error}
-          </Typography>
-        )}
-
-        <Button
-          type="submit"
-          variant="contained"
-          fullWidth
-          sx={{
-            mt: 3,
-            py: 1.2,
-            borderRadius: 2,
-            fontWeight: 600,
-          }}
-        >
-          Registrieren
-        </Button>
-      </Box>
-    </Box>
+        Registrieren
+      </Button>
+    </BoxForm>
+  </Box>
   );
 }

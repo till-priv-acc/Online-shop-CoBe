@@ -12,13 +12,15 @@ import ProductUpdate from "./components/ProductUpdate"
 import ProductDelete from './components/ProductDelete';
 import { UserRole } from '@/constants/userConstants';
 import NavbarLong from '@/components/navbar/NavbarLong';
+import BoxContent from '@/components/UIElements/BoxContent';
+import ImageSlider from '@/components/UIElements/ImageSlider';
+import HeaderPicture from '@/components/UIElements/HeaderPicture';
 
 export default function ProductDetailPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id;
 
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
 
   const fetcher = async (): Promise<{ product: ProductDBDTO; userid: string } | null> => {
@@ -45,96 +47,13 @@ export default function ProductDetailPage() {
   return (
   <Box sx={{ width: '100%'}}>
     {/* Header-Bild 100% */}
-    <Box
-      sx={{
-        width: '100%',
-        height: 220,
-        backgroundImage: `url("/images/product-detail.png")`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        mb: 4,
-      }}
-    />
+    <HeaderPicture headerPic="/images/product-detail.png" />
 
     {userRole && <NavbarLong userRole={userRole} />}
 
     {/* Produkt-Box */}
-    <Box
-      sx={{
-        width: '70%',
-        margin: '0 auto',
-        p: 3,
-        borderRadius: 3,
-        boxShadow: '0 6px 20px rgba(0,0,0,0.1)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 3,
-        backgroundColor: '#fff',
-      }}
-    >
-      {/* Slider */}
-      {imagePreviews.length > 0 && (
-        <Box
-          sx={{
-            width: '100%',
-            position: 'relative',
-            height: 300,
-            borderRadius: 2,
-            overflow: 'hidden',
-            mb: 2,
-          }}
-        >
-          <img
-            src={imagePreviews[currentIndex]}
-            onError={(e: any) => {
-              e.target.onerror = null;
-              e.target.src = '/images/placeholder.png';
-            }}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'contain',
-              backgroundColor: '#f5f5f5',
-            }}
-          />
-
-          <IconButton
-            onClick={() => setCurrentIndex(prev => Math.max(prev - 1, 0))}
-            sx={{
-              position: 'absolute',
-              left: 8,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              backgroundColor: 'rgba(255,255,255,0.7)',
-            }}
-          >
-            <ArrowBackIosIcon />
-          </IconButton>
-          <IconButton
-            onClick={() => setCurrentIndex(prev => Math.min(prev + 1, imagePreviews.length - 1))}
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              backgroundColor: 'rgba(255,255,255,0.7)',
-            }}
-          >
-            <ArrowForwardIosIcon />
-          </IconButton>
-        </Box>
-      )}
-
-      {/* Produktinfos */}
-      <Box sx={{ textAlign: 'center', mb: 2 }}>
-        <Typography variant="h3" sx={{ fontWeight: 700 }}>
-          {product.name}
-        </Typography>
-
-        <Typography variant="h4" sx={{ color: '#052d65', fontWeight: 600 }}>
-          €{product.price}
-        </Typography>
-      </Box>
+    <BoxContent>
+      <ImageSlider images={imagePreviews} height={450} />
 
       {/* Zentrierte Basisdaten-Box */}
       <Box
@@ -151,6 +70,15 @@ export default function ProductDetailPage() {
           textAlign: 'center',
         }}
       >
+        {/* Produktinfos */}
+        <Box sx={{ textAlign: "center", mb: 2 }}>
+          <Typography variant="h3" sx={{ fontWeight: 700 }}>
+            {product.name}
+          </Typography>
+        </Box>
+        <Typography variant="h4" sx={{ color: '#052d65', fontWeight: 600 }}>
+          €{product.price}
+        </Typography>
         <Divider sx={{width: "100%", mt: 2, mb: 1 }}>Basis Daten</Divider>
 
         <Box
@@ -262,7 +190,7 @@ export default function ProductDetailPage() {
           {product.createFromAdress}
         </Typography>
       </Box>
-    </Box>
+    </BoxContent>
   </Box>
 );
 }

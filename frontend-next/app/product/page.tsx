@@ -8,6 +8,8 @@ import { useRouter } from 'next/navigation';
 import { UserRole } from '@/constants/userConstants';
 import { AllProducts } from '@/constants/productConstants';
 import NavbarLong from '@/components/navbar/NavbarLong';
+import BoxContent from '@/components/UIElements/BoxContent';
+import HeaderPicture from '@/components/UIElements/HeaderPicture';
 
 const ProductsPage = () => {
   const router = useRouter();
@@ -51,32 +53,13 @@ const ProductsPage = () => {
   return (
     <Box sx={{ width: "100%" }}>
     {/* Header */}
-    <Box
-      sx={{
-        width: "100%",
-        height: 220,
-        borderRadius: 0,
-        backgroundImage: `url("/images/product-page.png")`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        mb: 6,
-        boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
-      }}
-    />
+
+    <HeaderPicture headerPic="/images/product-page.png" />
 
     {userRole && <NavbarLong userRole={userRole} />}
 
-      {/* 70%-Container zentriert */}
-      <Box
-        sx={{
-          width: "70%",
-          margin: "0 auto",
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 4,
-          justifyContent: "center",
-        }}
-      >
+      {/* 100%-Container zentriert */}
+      <BoxContent>
         {products.map((product) => {
           const imagePath = product.pictures
             ? `/product-images/${product.pictures}`
@@ -137,7 +120,7 @@ const ProductsPage = () => {
             </Card>
           );
         })}
-      </Box>
+      </BoxContent>
     </Box>
   );
 };

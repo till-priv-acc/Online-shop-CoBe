@@ -11,6 +11,7 @@ import { Box, Typography, Divider, CircularProgress } from "@mui/material";
 import { api } from "../../lib/api";
 import { UserAcc } from "@/constants/userConstants";
 import NavbarLong from "@/components/navbar/NavbarLong";
+import HeaderPicture from "@/components/UIElements/HeaderPicture";
 
 interface Invoice {
   id: string;
@@ -45,18 +46,8 @@ export default function ProfilePage() {
   return (
     <Box sx={{ width: "100%" }}>
       {/* Header */}
-      <Box
-        sx={{
-          width: "100%",
-          height: 220,
-          borderRadius: 0,
-          backgroundImage: `url("${headerImage}")`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          mb: 6,
-          boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
-        }}
-      />
+
+      <HeaderPicture headerPic={headerImage} />
 
       {error && (
         <Box sx={{ textAlign: "center" }}>
@@ -84,10 +75,10 @@ export default function ProfilePage() {
             width: "100%",
           }}
         >
-          {/* Haupt-Container: 70% der RootLayout-Breite */}
+          {/* Haupt-Container: 100% der RootLayout-Breite */}
           <Box
             sx={{
-              width: "70%",
+              width: "100%",
               display: "flex",
               flexDirection: "column",
               gap: 6,
