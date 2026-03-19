@@ -9,7 +9,7 @@ import { UserRole } from "@/constants/userConstants";
 import NavbarLong from "@/components/navbar/NavbarLong";
 import HeaderPicture from "@/components/UIElements/HeaderPicture";
 
-export default function ProductPage() {
+export default function ProductCreatePage() {
   const [userRole, setUserRole] = useState<UserRole | null>(null);
 
   const router = useRouter();
@@ -49,7 +49,7 @@ export default function ProductPage() {
 
       <HeaderPicture headerPic="/images/product-create.png" />
 
-      {userRole && <NavbarLong userRole={userRole} />}
+      {userRole && <NavbarLong userRole={userRole} currentPath="/product/create" />}
 
       {/* Container für ProductUpload, zentriert */}
       <Box

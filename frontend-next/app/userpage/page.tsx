@@ -67,7 +67,7 @@ export default function ProfilePage() {
 
       {user && (
         <>
-        {userRole && <NavbarLong userRole={userRole} />}
+        {userRole && <NavbarLong userRole={userRole} currentPath="/userpage" />}
         <Box
           sx={{
             display: "flex",

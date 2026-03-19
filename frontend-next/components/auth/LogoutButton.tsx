@@ -22,7 +22,6 @@ export default function LogoutButton() {
       variant="contained"
       color="secondary"
       onClick={handleLogout}
-      sx={{ mt: 2 }}
     >
       Logout
     </Button>

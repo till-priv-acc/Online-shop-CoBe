@@ -3,9 +3,7 @@
 import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
-import { Box, Typography, IconButton, Divider, Chip } from '@mui/material';
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import { Box, Typography, Divider, Chip } from '@mui/material';
 import { api } from '@/lib/api';
 import { ProductDBDTO, productCategoryColors } from '@/constants/productConstants';
 import ProductUpdate from "./components/ProductUpdate"
@@ -49,7 +47,7 @@ export default function ProductDetailPage() {
     {/* Header-Bild 100% */}
     <HeaderPicture headerPic="/images/product-detail.png" />
 
-    {userRole && <NavbarLong userRole={userRole} />}
+    {userRole && <NavbarLong userRole={userRole} currentPath="/product/[id]" />}
 
     {/* Produkt-Box */}
     <BoxContent>
@@ -178,10 +176,16 @@ export default function ProductDetailPage() {
 
         {/* Actions */}
         {userid && userid == product.createFromID && (
-          <Box sx={{width:"100%"}}>
-            <Divider sx={{width: "100%", mt: 2, mb: 1 }}>Actions</Divider>
-            <ProductUpdate initialData={product!} onSuccess={() => mutate()} />
-            <ProductDelete productID={product.id} productName={product.name} productPics={product.pictures?.map(f => f.fileName) || []}/>
+          <Box sx={{ width: "100%"}}>
+            <Divider sx={{ width: "100%", mt: 2, mb: 1 }}>Actions</Divider>
+            <Box sx={{ display: "flex", gap: 2, justifyContent: "center" }}>
+              <ProductUpdate initialData={product!} onSuccess={() => mutate()} />
+              <ProductDelete 
+                productID={product.id} 
+                productName={product.name} 
+                productPics={product.pictures?.map(f => f.fileName) || []}
+              />
+            </Box>
           </Box>
         )}
 

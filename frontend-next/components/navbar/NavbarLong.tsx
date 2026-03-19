@@ -1,104 +1,149 @@
 "use client";
 
-import { AppBar, Toolbar, Typography, Button, Menu, MenuItem, Box, IconButton } from "@mui/material";
+import { AppBar, Toolbar, Typography, Button, Menu, MenuItem, Box, useTheme } from "@mui/material";
 import { AccountCircle, Inventory2, Add } from "@mui/icons-material";
 import { useState } from "react";
 import Link from "next/link";
 import LogoutButton from "../auth/LogoutButton";
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 
 type UserRole = "USER" | "SELLER" | "ADMIN";
 
-interface NavbarProps {
+interface NavbarProps { 
   userRole: UserRole;
+  currentPath: string; // aktuelle Route
 }
 
-export default function NavbarLong({ userRole }: NavbarProps) {
+export default function NavbarLong({ userRole, currentPath }: NavbarProps) {
+  const theme = useTheme();
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
   const [productMenuAnchor, setProductMenuAnchor] = useState<null | HTMLElement>(null);
 
-  // Hover handlers für Userpage
-  const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => setUserMenuAnchor(event.currentTarget);
+  // Toggle User Menu
+  const handleUserMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setUserMenuAnchor(userMenuAnchor ? null : event.currentTarget);
+  };
   const handleUserMenuClose = () => setUserMenuAnchor(null);
 
-  // Hover handlers für Produkte
-  const handleProductMenuOpen = (event: React.MouseEvent<HTMLElement>) => setProductMenuAnchor(event.currentTarget);
+  // Toggle Product Menu
+  const handleProductMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setProductMenuAnchor(productMenuAnchor ? null : event.currentTarget);
+  };
   const handleProductMenuClose = () => setProductMenuAnchor(null);
 
+  // Gemeinsame Styles für MenuItems
+  const menuItemStyles = (isActive?: boolean) => ({
+    display: "flex",
+    alignItems: "center",
+    gap: 1.5,
+    fontSize: "1.4rem",
+    px: 2,
+    py: 1,
+    mb: 1,
+    borderBottom: "1px solid rgba(0,0,0,0.1)",
+    "&:last-child": { mb: 0, borderBottom: "none" },
+    backgroundColor: isActive ? "#000" : "transparent", // schwarz wenn aktiv
+    color: isActive ? "#fff" : "#000", // Schriftfarbe weiß bei aktiv
+    "&:hover": {
+      backgroundColor: theme.palette.primary.light,
+      color: "#fff",
+    },
+    transition: "all 0.2s ease",
+  });
+
+  const buttonStyles = {
+    fontSize: "1.3rem",
+    textTransform: "none",
+    color: "#fff",
+    display: "flex",
+    alignItems: "center",
+    gap: 1,
+  };
+
+  const iconStyles = {
+    fontSize: "2rem",
+    verticalAlign: "middle",
+  };
+
   return (
-    <AppBar position="static" sx={{ width: "100%", mb: 4}}>
+    <AppBar position="static" sx={{ width: "100%", mb: 4, backgroundColor: theme.palette.primary.main }}>
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-        {/* Logo / Titel */}
-        <Typography variant="h6" component={Link} href="/" sx={{ textDecoration: "none", color: "inherit" }}>
+        <Typography variant="h5" component={Link} href="/" sx={{ textDecoration: "none", color: "inherit" }}>
           MyShop
         </Typography>
 
-        {/* Navigation */}
-        <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-          {/* Userpage Menü */}
-          <Box onMouseEnter={handleUserMenuOpen} onMouseLeave={handleUserMenuClose}>
-            <Button
-              color="inherit"
-              startIcon={<AccountCircle />}
-              component={Link}
-              href="/userpage"
-            >
-              Userpage
+        <Box sx={{ display: "flex", gap: 3, alignItems: "center" }}>
+          {/* User Menu */}
+          <Box>
+            <Button onClick={handleUserMenuClick} sx={buttonStyles}>
+              <AccountCircle sx={iconStyles} />
+              User
             </Button>
             <Menu
-            anchorEl={userMenuAnchor}
-            open={Boolean(userMenuAnchor)}
-            onClose={handleUserMenuClose}
-            slotProps={{
-                list: {
-                onMouseLeave: handleUserMenuClose
-                }
-            }}
+              anchorEl={userMenuAnchor}
+              open={Boolean(userMenuAnchor)}
+              onClose={handleUserMenuClose}
+              sx={{
+                "& .MuiPaper-root": {
+                  backgroundColor: "#fff",
+                  borderRadius: 0,
+                  boxShadow: theme.shadows[4],
+                  mt: 0.5,
+                  py: 0,
+                },
+              }}
             >
-              <MenuItem onClick={handleUserMenuClose}>
+              <MenuItem component={Link} href="/userpage" onClick={handleUserMenuClose} sx={menuItemStyles(currentPath === "/userpage")}>
+                <AccountCircle fontSize="medium" />
+                Meine Daten
+              </MenuItem>
+              <MenuItem
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  borderBottom: "1px solid rgba(0,0,0,0.1)",
+                  "&:last-child": { borderBottom: "none" },
+                  px: 2, py: 1,
+                }}
+              >
                 <LogoutButton />
               </MenuItem>
             </Menu>
           </Box>
 
-          {/* Produkte Menü */}
-            <Box onMouseEnter={handleProductMenuOpen} onMouseLeave={handleProductMenuClose}>
-              <Button
-                color="inherit"
-                startIcon={<Inventory2 />}
-                component={Link}
-                href="/product"
-              >
-                Produkte
-              </Button>
+          {/* Product Menu */}
+          <Box>
+            <Button onClick={handleProductMenuClick} sx={buttonStyles}>
+              <Inventory2 sx={iconStyles} />
+              Produkte
+            </Button>
+            <Menu
+              anchorEl={productMenuAnchor}
+              open={Boolean(productMenuAnchor)}
+              onClose={handleProductMenuClose}
+              sx={{
+                "& .MuiPaper-root": {
+                  backgroundColor: "#fff",
+                  borderRadius: 0,
+                  boxShadow: theme.shadows[4],
+                  mt: 0.5,
+                  py: 0,
+                },
+              }}
+            >
+              <MenuItem component={Link} href="/product" onClick={handleProductMenuClose} sx={menuItemStyles(currentPath === "/product")}>
+                <FormatListBulletedIcon fontSize="medium" />
+                Alle Produkte
+              </MenuItem>
               {userRole === "SELLER" && (
-              <Menu
-                anchorEl={productMenuAnchor}
-                open={Boolean(productMenuAnchor)}
-                onClose={handleProductMenuClose}
-                slotProps={{
-                    list: {
-                    onMouseLeave: handleProductMenuClose
-                    }
-                }}
-                >
-                <MenuItem
-                component={Link}
-                href="/product/create"
-                onClick={handleProductMenuClose}
-                sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
-                    textDecoration: "none",
-                    color: "inherit",
-                }}
-                >
-                <Add fontSize="small" />
-                Create
+                <MenuItem component={Link} href="/product/create" onClick={handleProductMenuClose} sx={menuItemStyles(currentPath === "/product/create")}>
+                  <Add fontSize="medium" />
+                  Create
                 </MenuItem>
-              </Menu>
               )}
-            </Box>
+            </Menu>
+          </Box>
         </Box>
       </Toolbar>
     </AppBar>

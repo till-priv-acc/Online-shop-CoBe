@@ -56,7 +56,7 @@ const ProductsPage = () => {
 
     <HeaderPicture headerPic="/images/product-page.png" />
 
-    {userRole && <NavbarLong userRole={userRole} />}
+    {userRole && <NavbarLong userRole={userRole} currentPath="/product" />}
 
       {/* 100%-Container zentriert */}
       <BoxContent>
