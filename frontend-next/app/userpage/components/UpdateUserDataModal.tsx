@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { api } from "../../lib/api";
+import { api } from "@/lib/api";
 import {
   Button,
   Dialog,
@@ -13,7 +13,7 @@ import {
   Stack,
   MenuItem
 } from "@mui/material";
-import { allCountries } from "@/constants";
+import { allCountries } from "@/constants/userConstants";
 
 interface UpdateUserDataModalProps {
   initialData: {

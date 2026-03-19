@@ -5,10 +5,11 @@ import { Box, Divider, TextField, Button, MenuItem, FormControl, InputLabel, Typ
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { api } from "../../lib/api";
+import { api } from "@/lib/api";
 import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
-import { prodouctCategories, productColors, productMaterials } from "@/constants";
+import BoxForm from "@/components/UIElements/BoxForm";
+import { prodouctCategories, productColors, productMaterials } from "@/constants/productConstants";
 
 const materials = productMaterials;
 const colors = productColors;
@@ -122,19 +123,7 @@ const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
 };
 
   return (
-    <Box
-  component="form"
-  onSubmit={handleSubmit}
-  sx={{
-    width: "100%",
-    maxWidth: "1600px",
-    mx: "auto",
-    p: 2,
-    display: "grid",
-    gap: 2,
-    gridTemplateColumns: "repeat(2, 1fr)", // 2 Spalten für nebeneinander-Felder
-  }}
->
+  <BoxForm component="form" onSubmit={handleSubmit}>
   {/* ---------------- Name ---------------- */}
   <TextField label="Name" name="name" fullWidth onChange={handleChange} sx={{ gridColumn: "1 / -1" }} />
 
@@ -247,6 +236,6 @@ const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
       Produkt erstellen
     </Button>
   </Box>
-</Box>
+</BoxForm>
   );
 }

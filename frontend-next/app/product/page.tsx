@@ -5,20 +5,16 @@ import { Box, Card, CardContent, CardMedia, Typography, IconButton } from '@mui/
 import SearchIcon from '@mui/icons-material/Search';
 import {api} from '@/lib/api'; // dein Axios/Api Instance
 import { useRouter } from 'next/navigation';
-
-interface AllProducts {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  isAvailible: boolean;
-  createFrom: string;
-  pictures?: string;
-}
+import { UserRole } from '@/constants/userConstants';
+import { AllProducts } from '@/constants/productConstants';
+import NavbarLong from '@/components/navbar/NavbarLong';
+import BoxContent from '@/components/UIElements/BoxContent';
+import HeaderPicture from '@/components/UIElements/HeaderPicture';
 
 const ProductsPage = () => {
   const router = useRouter();
   const [products, setProducts] = useState<AllProducts[]>([]);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -26,9 +22,11 @@ const ProductsPage = () => {
         const check = await api.get("/users/check-session");
 
         if (!check.data.loggedIn) {
-          router.push("/login");
+          router.push("/authSites/login");
           return;
         }
+        // UserRole direkt aus check-session
+        setUserRole(check.data.role);
 
         const res = await api.get<AllProducts[]>("products/allProducts");
         setProducts(res.data);
@@ -55,30 +53,13 @@ const ProductsPage = () => {
   return (
     <Box sx={{ width: "100%" }}>
     {/* Header */}
-    <Box
-      sx={{
-        width: "100%",
-        height: 220,
-        borderRadius: 0,
-        backgroundImage: `url("/images/product-page.png")`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        mb: 6,
-        boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
-      }}
-    />
 
-      {/* 70%-Container zentriert */}
-      <Box
-        sx={{
-          width: "70%",
-          margin: "0 auto",
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 4,
-          justifyContent: "center",
-        }}
-      >
+    <HeaderPicture headerPic="/images/product-page.png" />
+
+    {userRole && <NavbarLong userRole={userRole} currentPath="/product" />}
+
+      {/* 100%-Container zentriert */}
+      <BoxContent>
         {products.map((product) => {
           const imagePath = product.pictures
             ? `/product-images/${product.pictures}`
@@ -139,7 +120,7 @@ const ProductsPage = () => {
             </Card>
           );
         })}
-      </Box>
+      </BoxContent>
     </Box>
   );
 };

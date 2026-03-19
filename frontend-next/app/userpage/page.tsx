@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { useRouter } from "next/navigation";
 import LogoutButton from "../../components/auth/LogoutButton";
-import PasswordChangeButtonModal from "@/components/usermanagement/PasswordChangeModal";
-import UpdateUserDataModal from "@/components/usermanagement/UpdateUserDataModal";
-import AdminUserTable from "@/components/usermanagement/AdminUserTable";
+import PasswordChangeButtonModal from "./components/PasswordChangeModal";
+import UpdateUserDataModal from "./components/UpdateUserDataModal";
+import AdminUserTable from "@/components/admin/AdminUserTable";
 import { Box, Typography, Divider, CircularProgress } from "@mui/material";
 import { api } from "../../lib/api";
-import { UserAcc } from "@/constants";
+import { UserAcc } from "@/constants/userConstants";
+import NavbarLong from "@/components/navbar/NavbarLong";
+import HeaderPicture from "@/components/UIElements/HeaderPicture";
 
 interface Invoice {
   id: string;
@@ -29,30 +31,23 @@ export default function ProfilePage() {
   const { data: user, mutate } = useSWR<UserAcc>("/users/me", async () => {
     const check = await api.get("/users/check-session");
     if (!check.data.loggedIn) {
-      router.push("/login");
+      router.push("/authSites/login");
       return null;
     }
+
     const res = await api.get("/users/me");
     return res.data;
   });
 
   const headerImage = error ? "/images/pb-error.png" : "/images/pb-success.png";
 
+  const userRole = user?.type;
+
   return (
     <Box sx={{ width: "100%" }}>
       {/* Header */}
-      <Box
-        sx={{
-          width: "100%",
-          height: 220,
-          borderRadius: 0,
-          backgroundImage: `url("${headerImage}")`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          mb: 6,
-          boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
-        }}
-      />
+
+      <HeaderPicture headerPic={headerImage} />
 
       {error && (
         <Box sx={{ textAlign: "center" }}>
@@ -71,6 +66,8 @@ export default function ProfilePage() {
       )}
 
       {user && (
+        <>
+        {userRole && <NavbarLong userRole={userRole} currentPath="/userpage" />}
         <Box
           sx={{
             display: "flex",
@@ -78,10 +75,10 @@ export default function ProfilePage() {
             width: "100%",
           }}
         >
-          {/* Haupt-Container: 70% der RootLayout-Breite */}
+          {/* Haupt-Container: 100% der RootLayout-Breite */}
           <Box
             sx={{
-              width: "70%",
+              width: "100%",
               display: "flex",
               flexDirection: "column",
               gap: 6,
@@ -208,6 +205,7 @@ export default function ProfilePage() {
             )}
           </Box>
         </Box>
+      </>
       )}
     </Box>
   );

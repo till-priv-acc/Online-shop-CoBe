@@ -16,7 +16,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import { Edit } from "@mui/icons-material";
-import { prodouctCategories, productColors, productMaterials, ProductDBDTO} from "@/constants";
+import { prodouctCategories, productColors, productMaterials, ProductDBDTO} from "@/constants/productConstants";
 
 interface ProductUpdateModalProps {
   initialData: ProductDBDTO;
