@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Product } from '../../products/entities/product.entity';
+import { Invoice } from '../../invoice/entity/invoice.entity';
 
 @Entity('users')
 export class User {
@@ -39,4 +40,7 @@ export class User {
   // inverse relation
   @OneToMany(() => Product, (product) => product.createFrom)
   products?: Product[];
+
+  @OneToMany(() => Invoice, (invoice) => invoice.owner)
+  invoice?: Invoice[];
 }

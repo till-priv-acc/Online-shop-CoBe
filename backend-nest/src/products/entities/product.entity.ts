@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { User } from '../../users/entities/user.entity'; // Beispiel: die Tabelle, auf die createFrom verweist
 import { Picture } from './picture.entity';
+import { ShoppingCard } from '../../invoice/entity/shoppingcard.entity';
 
 @Entity('products')
 export class Product {
@@ -46,4 +47,7 @@ export class Product {
 
   @OneToMany(() => Picture, (picture) => picture.product)
   pictures?: Picture[];
+
+  @OneToMany(() => ShoppingCard, (shoppingcard) => shoppingcard.product)
+  shoppingCard?: ShoppingCard[];
 }
