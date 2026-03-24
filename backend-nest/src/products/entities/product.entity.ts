@@ -1,51 +1,51 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
-import { User } from '../../users/entities/user.entity'; // Beispiel: die Tabelle, auf die createFrom verweist
+import { User } from '../../users/entities/user.entity';
 import { Picture } from './picture.entity';
-import { ShoppingCard } from '../../invoice/entity/shoppingcard.entity';
+import { ShoppingCard } from '../../invoice/entities/shoppingcard.entity';
 
 @Entity('products')
 export class Product {
   @PrimaryGeneratedColumn('uuid')
-  id?: string; // Primärschlüssel
+  id!: string; // Primärschlüssel, Pflichtfeld für TypeORM
 
-  @Column()
-  name?: string;
+  @Column({ nullable: false })
+  name!: string;
 
-  @Column('text')
+  @Column('text', { nullable: true })
   description?: string;
 
-  @Column()
-  crowd?: number;
+  @Column({ nullable: false })
+  crowd!: number;
 
-  @Column()
-  minCrowd?: number;
+  @Column({ nullable: false })
+  minCrowd!: number;
 
-  @Column('decimal')
-  price?: number;
+  @Column('decimal', { nullable: false })
+  price!: number;
 
-  @Column()
-  deliverable?: number;
+  @Column({ nullable: false })
+  deliverable!: number;
 
-  @Column()
-  deliverableAbroad?: number;
+  @Column({ nullable: false })
+  deliverableAbroad!: number;
 
-  @Column()
+  @Column({ nullable: true })
   material?: string;
 
-  @Column()
+  @Column({ nullable: true })
   color?: string;
 
-  @Column()
+  @Column({ nullable: true })
   category?: string;
 
   @Column({ default: true })
-  isAvailible?: boolean;
+  isAvailible!: boolean;
 
-  @ManyToOne(() => User, (user) => user.products, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.products, { onDelete: 'CASCADE', nullable: false })
   @JoinColumn({ name: 'createFrom' })
-  createFrom?: User;
+  createFrom!: User; // User direkt, kein string
 
-  @OneToMany(() => Picture, (picture) => picture.product)
+  @OneToMany(() => Picture, (picture) => picture.product, { cascade: true, eager: true })
   pictures?: Picture[];
 
   @OneToMany(() => ShoppingCard, (shoppingcard) => shoppingcard.product)

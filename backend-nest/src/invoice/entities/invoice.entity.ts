@@ -7,24 +7,17 @@ export class Invoice {
   @PrimaryGeneratedColumn('uuid')
   id?: string; // Primärschlüssel
 
-  @ManyToOne(() => User, (user) => user.invoice, { onDelete: 'SET NULL' })
+  @ManyToOne(() => User, (user) => user.invoices, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'owner' })
   owner?: User;
 
-  @Column()
-  ownerAdress?: string;
+  @Column({nullable: false})
+  ownerAddress?: string;
 
-  @ManyToOne(() => User, (user) => user.invoice, { onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'owner' })
-  seller?: User;
-
-  @Column()
-  sellerAdress?: string;
-
-  @Column()
+  @Column({nullable: true})
   totalPrice?: number;
 
-  @Column({ default: true })
+  @Column({ default: false })
   isBought?: boolean;
 
   @Column({ type: 'timestamp', nullable: true })

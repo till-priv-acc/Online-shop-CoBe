@@ -1,12 +1,27 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+
 import { UsersModule } from './users/users.module';
 import { ProductsModule } from './products/products.module';
+import { InvoiceModule } from './invoice/invoice.module';
 
 @Module({
-  imports: [UsersModule, ProductsModule],       // UsersModule muss hier rein
-  controllers: [AppController], // bleibt, weil dein AppController etwas macht
-  providers: [AppService],      // bleibt, weil dein AppService etwas macht
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'sqlite',
+      database: 'database.db',
+      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      synchronize: true,
+    }),
+
+    UsersModule,
+    ProductsModule,
+    InvoiceModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
