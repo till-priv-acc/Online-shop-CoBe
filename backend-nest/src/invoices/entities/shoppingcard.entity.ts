@@ -6,24 +6,24 @@ import { User } from '../../users/entities/user.entity';
 @Entity('shoppingcard')
 export class ShoppingCard {
   @PrimaryGeneratedColumn('uuid')
-  id?: string; // Primärschlüssel
+  id!: string; // Primärschlüssel
 
-  @ManyToOne(() => Product, (product) => product.shoppingCard, { onDelete: 'SET NULL', nullable: false })
+  @ManyToOne(() => Product, (product) => product.shoppingCard, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'product' })
   product?: Product;
 
-  @ManyToOne(() => User, (user) => user.invoices, { onDelete: 'SET NULL', nullable: false })
+  @ManyToOne(() => User, (user) => user.invoices, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'owner' })
   seller?: User;
 
   @Column({nullable: false})
-  sellerAddress?: string;
+  sellerAddress!: string;
 
   @ManyToOne(() => Invoice, (invoice) => invoice.shoppingcard, { onDelete: 'CASCADE', nullable: false })
   @JoinColumn({ name: 'invoice' })
-  invoice?: Invoice;
+  invoice!: Invoice;
 
   @Column({nullable: false})
-  quantity?: number;
+  quantity!: number;
 
 }

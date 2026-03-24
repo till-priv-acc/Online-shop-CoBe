@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Product } from '../../products/entities/product.entity';
-import { Invoice } from '../../invoice/entities/invoice.entity';
-import { ShoppingCard } from '../../invoice/entities/shoppingcard.entity';
+import { Invoice } from '../../invoices/entities/invoice.entity';
+import { ShoppingCard } from '../../invoices/entities/shoppingcard.entity';
 
 @Entity('users')
 export class User {
