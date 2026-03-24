@@ -20,8 +20,8 @@ export class Invoice {
   @Column({ default: false })
   isBought?: boolean;
 
-  @Column({ type: 'timestamp', nullable: true })
-purchasedAt?: Date;
+  @Column({ type: 'datetime', nullable: true })
+  purchasedAt?: Date | null;
 
   // inverse relation
     @OneToMany(() => ShoppingCard, (shoppingcard) => shoppingcard.invoice)
