@@ -7,6 +7,7 @@ import { Invoice } from './entities/invoice.entity';
 import { ShoppingCard } from './entities/shoppingcard.entity';
 import { User } from '../users/entities/user.entity';
 import { Product } from '../products/entities/product.entity';
+import { AllInvoicesDTO, AllInvoiceItemsDTO} from './dto/invoices.dto';
 
 @Injectable()
 export class InvoiceService {
@@ -79,17 +80,53 @@ async findOpenInvoice(userId: string): Promise<Invoice | undefined> {
 }
 
   // Alle Invoices holen
-  async findAll(): Promise<Invoice[]> {
+  async findAll(): Promise<AllInvoicesDTO[]> {
     this.logger.log(`[InvoicesService] Hole alle Invoices`);
     const invoices = await this.invoiceRepo.find({
       relations: ['shoppingcard', 'shoppingcard.product', 'owner'],
     });
     this.logger.log(`[InvoicesService] Gefundene Invoices: ${invoices.length}`);
-    return invoices;
+
+    const returnInvoices: AllInvoicesDTO[] = invoices.map(invoice =>
+      new AllInvoicesDTO({
+        id: invoice.id,
+        totalPrice: invoice.totalPrice,
+        purchasedAt: invoice.purchasedAt?.toISOString(),
+      })
+
+    );
+
+    return returnInvoices;
   }
 
+  async AllInvoiceItems(invoiceId: string): Promise<AllInvoiceItemsDTO[]> {
+  this.logger.log(`[InvoicesService] Hole Items von Invoice ${invoiceId}`);
+
+  const cardItems = await this.shoppingCardRepo.find({
+    where: { invoice: { id: invoiceId } },
+    relations: ['product', 'seller'], // Names aus deinen Entities
+  });
+
+  this.logger.log(`[InvoicesService] Gefundene Invoice Items: ${cardItems.length}`);
+
+  const returnCardItems: AllInvoiceItemsDTO[] = cardItems.map(item =>
+    new AllInvoiceItemsDTO({
+      id: item.id,
+      seller: item.seller ? `${item.seller.firstname} ${item.seller.name}` : null,
+      sellerId: item.seller ? item.seller.id : null,
+      sellerAddress: item.sellerAddress,
+      quantity: item.quantity,
+      productId: item.product?.id ?? null,
+      productName: item.product?.name ?? null,
+      productPrice: item.product?.price ?? null,
+    })
+  );
+
+  return returnCardItems;
+}
+
   // Eine Invoice holen
-  async findOne(id: string): Promise<Invoice | null> {
+  async findOne(id: string): Promise<Invoice> {
     this.logger.log(`[InvoicesService] Hole Invoice ${id}`);
     const invoice = await this.invoiceRepo.findOne({
       where: { id },
@@ -99,11 +136,12 @@ async findOpenInvoice(userId: string): Promise<Invoice | undefined> {
       this.logger.log(`[InvoicesService] Invoice ${id} gefunden`);
     } else {
       this.logger.warn(`[InvoicesService] Invoice ${id} nicht gefunden`);
+      throw new Error("Invoice nicht gefunden");
     }
     return invoice;
   }
 
-  async findAllByUser(userId: string): Promise<Invoice[]> {
+  async findAllByUser(userId: string): Promise<AllInvoicesDTO[]> {
   this.logger.log(`[InvoicesService] Hole alle Invoices für User ${userId}`);
 
   const invoices = await this.invoiceRepo.find({
@@ -112,7 +150,16 @@ async findOpenInvoice(userId: string): Promise<Invoice | undefined> {
   });
 
   this.logger.log(`[InvoicesService] Gefundene Invoices für User ${userId}: ${invoices.length}`);
-  return invoices;
+
+  const returnInvoices: AllInvoicesDTO[] = invoices.map(invoice =>
+      new AllInvoicesDTO({
+        id: invoice.id,
+        totalPrice: invoice.totalPrice,
+        purchasedAt: invoice.purchasedAt?.toISOString(),
+      })
+    );
+
+  return returnInvoices;
 }
 
   //Item hinzufügen
@@ -120,7 +167,7 @@ async findOpenInvoice(userId: string): Promise<Invoice | undefined> {
   userId: string,
   productId: string,
   quantity: number,
-): Promise<ShoppingCard> {
+): Promise<Boolean> {
   this.logger.log(`[InvoicesService] Füge Produkt ${productId} (qty: ${quantity}) für User ${userId} hinzu`);
 
   // Stelle sicher, dass eine offene Invoice existiert
@@ -158,14 +205,15 @@ async findOpenInvoice(userId: string): Promise<Invoice | undefined> {
   const savedItem = await this.shoppingCardRepo.save(item);
   this.logger.log(`[InvoicesService] Item ${savedItem.id} gespeichert für Invoice ${invoice.id}`);
 
-  return savedItem;
+  
+  return !!savedItem;
 }
 
 async updateCartItemQuantity(
   invoiceId: string,
   productId: string,
   newQuantity: number,
-): Promise<ShoppingCard> {
+): Promise<Boolean> {
   this.logger.log(`[InvoicesService] Aktualisiere Warenkorb-Item: Invoice ${invoiceId}, Produkt ${productId} auf Quantity ${newQuantity}`);
 
   // Item in ShoppingCard suchen, wo Invoice und Product übereinstimmen
@@ -188,7 +236,7 @@ async updateCartItemQuantity(
   const savedItem = await this.shoppingCardRepo.save(item);
   this.logger.log(`[InvoicesService] Neue Quantity gespeichert: ${savedItem.quantity} für Item ${savedItem.id}`);
 
-  return savedItem;
+  return !!savedItem;
 }
 
 async deleteCartItem(

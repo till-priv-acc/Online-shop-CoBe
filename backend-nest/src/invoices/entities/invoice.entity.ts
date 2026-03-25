@@ -12,13 +12,13 @@ export class Invoice {
   owner?: User;
 
   @Column({nullable: false})
-  ownerAddress?: string;
+  ownerAddress!: string;
 
   @Column({nullable: true})
   totalPrice?: number;
 
   @Column({ default: false })
-  isBought?: boolean;
+  isBought!: boolean;
 
   @Column({ type: 'datetime', nullable: true })
   purchasedAt?: Date | null;
