@@ -173,6 +173,11 @@ async findOpenInvoice(userId: string): Promise<Invoice | undefined> {
   // Stelle sicher, dass eine offene Invoice existiert
   const invoice = await this.createInvoice(userId);
   this.logger.log(`[InvoicesService] Offene Invoice ${invoice.id} für User ${userId} genutzt`);
+  
+  if (!invoice) {
+    this.logger.error(`[InvoicesService] invoice konnte nicht erstellt werden / gefunden gunden`);
+    throw new Error('Fehler beim abruf der Invoice');
+  }
 
   // Product laden inklusive createFrom (Seller)
   const product = await this.ProductRepo.findOne({
@@ -192,20 +197,33 @@ async findOpenInvoice(userId: string): Promise<Invoice | undefined> {
 
   // Seller-Adresse vom User übernehmen
   const sellerAddress = `${seller.country}, ${seller.pCode} ${seller.town}, ${seller.street} ${seller.hNumber}`;
+  const cardItem = await this.shoppingCardRepo.findOne({
+    where: {
+      product: product,
+      invoice: invoice
+    }
+  })
 
-  // ShoppingCard Item erstellen
-  const item = this.shoppingCardRepo.create({
-    invoice,
-    product,
-    seller,
-    quantity,
-    sellerAddress,
-  });
+  let savedItem;
 
-  const savedItem = await this.shoppingCardRepo.save(item);
-  this.logger.log(`[InvoicesService] Item ${savedItem.id} gespeichert für Invoice ${invoice.id}`);
+  if(cardItem) {
+    savedItem = await this.updateCartItemQuantity(invoice.id, product.id, cardItem.quantity + quantity)
+    this.logger.log(`[InvoicesService] Item ${savedItem.id} Menge aktualisiert`);
+  } else {
+    // ShoppingCard Item erstellen
+    const item = this.shoppingCardRepo.create({
+      invoice,
+      product,
+      seller,
+      quantity,
+      sellerAddress,
+    });
 
+    savedItem = await this.shoppingCardRepo.save(item);
+    this.logger.log(`[InvoicesService] Item ${savedItem.id} gespeichert für Invoice ${invoice.id}`);
+    }
   
+
   return !!savedItem;
 }
 
@@ -213,7 +231,7 @@ async updateCartItemQuantity(
   invoiceId: string,
   productId: string,
   newQuantity: number,
-): Promise<Boolean> {
+): Promise<ShoppingCard> {
   this.logger.log(`[InvoicesService] Aktualisiere Warenkorb-Item: Invoice ${invoiceId}, Produkt ${productId} auf Quantity ${newQuantity}`);
 
   // Item in ShoppingCard suchen, wo Invoice und Product übereinstimmen
@@ -236,7 +254,7 @@ async updateCartItemQuantity(
   const savedItem = await this.shoppingCardRepo.save(item);
   this.logger.log(`[InvoicesService] Neue Quantity gespeichert: ${savedItem.quantity} für Item ${savedItem.id}`);
 
-  return !!savedItem;
+  return savedItem;
 }
 
 async deleteCartItem(

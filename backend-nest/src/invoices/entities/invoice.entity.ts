@@ -5,7 +5,7 @@ import { ShoppingCard } from './shoppingcard.entity';
 @Entity('invoice')
 export class Invoice {
   @PrimaryGeneratedColumn('uuid')
-  id?: string; // Primärschlüssel
+  id!: string; // Primärschlüssel
 
   @ManyToOne(() => User, (user) => user.invoices, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'owner' })
