@@ -7,10 +7,10 @@ import { Invoice } from './entities/invoice.entity';
 import { ShoppingCard } from './entities/shoppingcard.entity';
 import { User } from '../users/entities/user.entity';
 import { Product } from '../products/entities/product.entity';
-import { AllInvoicesDTO, AllInvoiceItemsDTO} from './dto/invoices.dto';
+import { AllInvoicesDTO, AllInvoiceItemsDTO, InvoiceCompleteDTO} from './dto/invoices.dto';
 
 @Injectable()
-export class InvoiceService {
+export class InvoicesService {
   constructor(
     @InjectRepository(Invoice)
     private readonly invoiceRepo: Repository<Invoice>,
@@ -99,9 +99,16 @@ async findOpenInvoice(userId: string): Promise<Invoice | undefined> {
     return returnInvoices;
   }
 
-  async AllInvoiceItems(invoiceId: string): Promise<AllInvoiceItemsDTO[]> {
+  async AllInvoiceItems(invoiceId: string): Promise<InvoiceCompleteDTO> {
   this.logger.log(`[InvoicesService] Hole Items von Invoice ${invoiceId}`);
 
+  // Invoice-Daten holen
+  const invoice = await this.findOne(invoiceId);
+  if (!invoice) {
+    throw new Error(`Invoice ${invoiceId} nicht gefunden`);
+  }
+
+  // Items in der Invoice holen
   const cardItems = await this.shoppingCardRepo.find({
     where: { invoice: { id: invoiceId } },
     relations: ['product', 'seller'], // Names aus deinen Entities
@@ -109,6 +116,7 @@ async findOpenInvoice(userId: string): Promise<Invoice | undefined> {
 
   this.logger.log(`[InvoicesService] Gefundene Invoice Items: ${cardItems.length}`);
 
+  // Items in AllInvoiceItemsDTO mappen
   const returnCardItems: AllInvoiceItemsDTO[] = cardItems.map(item =>
     new AllInvoiceItemsDTO({
       id: item.id,
@@ -122,7 +130,16 @@ async findOpenInvoice(userId: string): Promise<Invoice | undefined> {
     })
   );
 
-  return returnCardItems;
+  // InvoiceCompleteDTO zusammenbauen
+  const completeInvoice = new InvoiceCompleteDTO({
+    id: invoice.id,
+    totalPrice: invoice.totalPrice, // wie gewünscht
+    purchasedAt: invoice.purchasedAt?.toISOString(),
+    isBought: invoice.isBought ? 'true' : 'false',
+    invoiceItems: returnCardItems,
+  });
+
+  return completeInvoice;
 }
 
   // Eine Invoice holen
@@ -257,60 +274,51 @@ async updateCartItemQuantity(
   return savedItem;
 }
 
-async deleteCartItem(
-  invoiceId: string,
-  productId: string,
-): Promise<void> {
-  this.logger.log(`[InvoicesService] Lösche Warenkorb-Item: Invoice ${invoiceId}, Produkt ${productId}`);
+async deleteCartItem(cardItemId: string): Promise<void> {
+  this.logger.log(`[InvoicesService] Lösche Warenkorb-Item: ${cardItemId}`);
 
-  // Item in ShoppingCard suchen
-  const item = await this.shoppingCardRepo.findOne({
-    where: {
-      invoice: { id: invoiceId },
-      product: { id: productId },
-    },
-    relations: ['product', 'seller', 'invoice'],
+  const result = await this.shoppingCardRepo.delete({
+    id: cardItemId,
   });
 
-  if (!item) {
-    this.logger.warn(`[InvoicesService] Kein Item gefunden für Invoice ${invoiceId} und Produkt ${productId}, nichts zu löschen`);
-    return;
+  if (result.affected === 0) {
+    this.logger.warn(`[InvoicesService] Kein Item gefunden: ${cardItemId}`);
+    throw new Error('Cart item not found');
   }
 
-  await this.shoppingCardRepo.remove(item);
-  this.logger.log(`[InvoicesService] Item ${item.id} erfolgreich gelöscht`);
+  this.logger.log(`[InvoicesService] Item ${cardItemId} erfolgreich gelöscht`);
 }
   // Invoice als gekauft markieren und Lagerbestand abziehen
-  async markAsBought(invoiceId: string): Promise<Invoice> {
-    this.logger.log(`[InvoicesService] Markiere Invoice ${invoiceId} als gekauft`);
+async markAsBought(invoiceId: string): Promise<Invoice> {
+  this.logger.log(`[InvoicesService] Markiere Invoice ${invoiceId} als gekauft`);
 
-    const invoice = await this.invoiceRepo.findOne({
-      where: { id: invoiceId },
-      relations: ['shoppingcard', 'shoppingcard.product'],
-    });
+  const invoice = await this.invoiceRepo.findOne({
+    where: { id: invoiceId },
+    relations: ['shoppingcard', 'shoppingcard.product'],
+  });
 
-    if (!invoice) {
-      this.logger.error(`[InvoicesService] Invoice ${invoiceId} nicht gefunden`);
-      throw new Error('Invoice not found');
-    }
-
-    this.logger.log(`[InvoicesService] Aktualisiere Lagerbestand für ${invoice.shoppingcard?.length ?? 0} Produkte`);
-    for (const item of invoice.shoppingcard ?? []) {
-      if (item.product) {
-        this.logger.log(`[InvoicesService] Produkt ${item.product.id} crowd: ${item.product.crowd} - Ziehe ${item.quantity} ab`);
-        item.product.crowd -= item.quantity;
-        await this.ProductRepo.save(item.product);
-        this.logger.log(`[InvoicesService] Neuer crowd-Wert für Produkt ${item.product.id}: ${item.product.crowd}`);
-      }
-    }
-
-    invoice.isBought = true;
-    invoice.purchasedAt = new Date();
-    const savedInvoice = await this.invoiceRepo.save(invoice);
-
-    this.logger.log(`[InvoicesService] Invoice ${invoiceId} als gekauft markiert`);
-    return savedInvoice;
+  if (!invoice) {
+    this.logger.error(`[InvoicesService] Invoice ${invoiceId} nicht gefunden`);
+    throw new Error('Invoice not found');
   }
+
+  this.logger.log(`[InvoicesService] Aktualisiere Lagerbestand für ${invoice.shoppingcard?.length ?? 0} Produkte`);
+  for (const item of invoice.shoppingcard ?? []) {
+    if (item.product) {
+      this.logger.log(`[InvoicesService] Produkt ${item.product.id} crowd: ${item.product.crowd} - Ziehe ${item.quantity} ab`);
+      item.product.crowd -= item.quantity;
+      await this.ProductRepo.save(item.product);
+      this.logger.log(`[InvoicesService] Neuer crowd-Wert für Produkt ${item.product.id}: ${item.product.crowd}`);
+    }
+  }
+
+  invoice.isBought = true;
+  invoice.purchasedAt = new Date();
+  const savedInvoice = await this.invoiceRepo.save(invoice);
+
+  this.logger.log(`[InvoicesService] Invoice ${invoiceId} als gekauft markiert`);
+  return savedInvoice;
+}
 
   // Gesamtpreis berechnen
   async calculateTotal(invoiceId: string): Promise<number> {

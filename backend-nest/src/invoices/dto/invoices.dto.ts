@@ -23,3 +23,34 @@ export class AllInvoiceItemsDTO {
     Object.assign(this, partial);
   }
 }
+
+export class InvoiceCompleteDTO {
+    id!: string;
+    totalPrice?: number;
+    purchasedAt?: string;
+    isBought!: string;
+    invoiceItems!: AllInvoiceItemsDTO[];
+
+    constructor(partial: Partial<InvoiceCompleteDTO>) {
+    Object.assign(this, partial);
+  }
+}
+
+export class ItemCallDTO {
+  productId!: string;
+  quantity!: number;
+
+  constructor(partial: Partial<ItemCallDTO>) {
+    Object.assign(this, partial);
+  }
+}
+
+export class updateCallDTO {
+  invoiceId!: string;
+  productId!: string;
+  quantity!: number;
+
+  constructor(partial: Partial<updateCallDTO>) {
+    Object.assign(this, partial);
+  }
+}
