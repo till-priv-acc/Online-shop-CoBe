@@ -25,7 +25,7 @@ export class InvoicesController {
     private readonly logger: InvoiceLogger,
   ) {}
 
-  @Post('addItemToCard')
+  @Post('addItemToCart')
   @UseGuards(AuthGuard)
   async createItem(
     @Body() item: ItemCallDTO,
@@ -81,7 +81,7 @@ export class InvoicesController {
     }
   }
 
-  @Patch('buyShoppingcard/:invoiceId')
+  @Patch('buyShoppingcart/:invoiceId')
   @UseGuards(AuthGuard)
   async buyShoppingcard(
     @Param('invoiceId') invoiceId: string,
@@ -103,10 +103,10 @@ export class InvoicesController {
     }
   }
 
-  @Delete('cardItem/:cardItemId')
+  @Delete('cartItem/:cartItemId')
   @UseGuards(AuthGuard)
   async deleteCartItem(
-    @Param('cardItemId') cardItemId: string,
+    @Param('cartItemId') cardItemId: string,
   ): Promise<{ message: string }> {
     try {
         await this.invoicesService.deleteCartItem(cardItemId);
@@ -125,7 +125,7 @@ export class InvoicesController {
     }
   }
 
-  @Get('shoppingcard/:userid')
+  @Get('shoppingcart/:userid')
   @UseGuards(AuthGuard)
   async getShoppingcard(
     @Param('userid') cardUserId: string,

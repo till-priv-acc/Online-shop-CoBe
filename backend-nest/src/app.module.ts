@@ -6,7 +6,7 @@ import { AppService } from './app.service';
 
 import { UsersModule } from './users/users.module';
 import { ProductsModule } from './products/products.module';
-import { InvoiceModule } from './invoices/invoices.module';
+import { InvoicesModule } from './invoices/invoices.module';
 
 @Module({
   imports: [
@@ -19,7 +19,7 @@ import { InvoiceModule } from './invoices/invoices.module';
 
     UsersModule,
     ProductsModule,
-    InvoiceModule,
+    InvoicesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

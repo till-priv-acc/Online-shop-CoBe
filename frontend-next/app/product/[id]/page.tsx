@@ -28,7 +28,7 @@ export default function ProductDetailPage() {
       return null;
     }
     const userid: string = check.data.userId || '';
-    setUserRole(check.data.role)
+    setUserRole(check.data.role);
     const res = await api.get<ProductDBDTO>(`/products/product/${id}`);
     return { product: res.data, userid };
   };

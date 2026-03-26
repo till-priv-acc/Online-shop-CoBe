@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Box, Card, CardContent, CardMedia, Typography, IconButton } from '@mui/material';
+import { Box, Card, CardContent, CardMedia, Typography, IconButton, Snackbar, Alert } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import { AddShoppingCartOutlined } from '@mui/icons-material';
 import {api} from '@/lib/api'; // dein Axios/Api Instance
 import { useRouter } from 'next/navigation';
 import { UserRole } from '@/constants/userConstants';
@@ -15,6 +16,16 @@ const ProductsPage = () => {
   const router = useRouter();
   const [products, setProducts] = useState<AllProducts[]>([]);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
+
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    setToastOpen(true);
+  };
+
+  const handleToastClose = () => setToastOpen(false);
 
   useEffect(() => {
     const init = async () => {
@@ -39,7 +50,7 @@ const ProductsPage = () => {
           const error = err as { response?: { status?: number } };
 
           if (error.response?.status === 401) {
-            router.push("/login");
+            router.push("/authSites/login");
             return;
           }
         }
@@ -49,6 +60,21 @@ const ProductsPage = () => {
 
     init();
   }, []);
+
+  const addToCart = async (id: string, name: string) => {
+    try {
+      const res = await api.post("/invoices/addItemToCart", {
+        productId: id,
+        quantity: 1,
+      });
+
+      // Direkt die message nutzen
+      showToast(res.data.message); // z.B. "Item added successfully to Invoice"
+    } catch (err: any) {
+      console.error("Fehler beim Hinzufügen zum Warenkorb", err);
+      showToast("Fehler beim Hinzufügen zum Warenkorb");
+    }
+  };
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -100,6 +126,19 @@ const ProductsPage = () => {
               >
                 <SearchIcon />
               </IconButton>
+              {/* Add to Cart Button direkt darunter */}
+              <IconButton
+                sx={{
+                  position: "absolute",
+                  top: 48, // Abstand unterhalb des Lupen-Buttons
+                  right: 8,
+                  backgroundColor: "rgba(255,255,255,0.8)",
+                  "&:hover": { backgroundColor: "rgba(255,255,255,1)" },
+                }}
+                onClick={() => addToCart(product.id, product.name)}
+              >
+                <AddShoppingCartOutlined />
+              </IconButton>
 
               <CardContent>
                 <Typography variant="h6">{product.name}</Typography>
@@ -121,7 +160,22 @@ const ProductsPage = () => {
           );
         })}
       </BoxContent>
+      <Snackbar
+        open={toastOpen}
+        autoHideDuration={3000}
+        onClose={handleToastClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleToastClose}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          {toastMessage}
+        </Alert>
+    </Snackbar>
     </Box>
+
   );
 };
 
