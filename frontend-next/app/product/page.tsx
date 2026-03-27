@@ -11,6 +11,7 @@ import { AllProducts } from '@/constants/productConstants';
 import NavbarLong from '@/components/navbar/NavbarLong';
 import BoxContent from '@/components/UIElements/BoxContent';
 import HeaderPicture from '@/components/UIElements/HeaderPicture';
+import ToastMesssage from '@/components/UIElements/ToastMessage';
 
 const ProductsPage = () => {
   const router = useRouter();
@@ -19,9 +20,11 @@ const ProductsPage = () => {
 
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [toastSeverity, setToastSeverity] = useState<"success" | "error">("success");
 
-  const showToast = (message: string) => {
+  const showToast = (message: string, severity: "success" | "error" = "success") => {
     setToastMessage(message);
+    setToastSeverity(severity);
     setToastOpen(true);
   };
 
@@ -160,20 +163,12 @@ const ProductsPage = () => {
           );
         })}
       </BoxContent>
-      <Snackbar
+      <ToastMesssage
         open={toastOpen}
-        autoHideDuration={3000}
+        message={toastMessage}
+        severity={toastSeverity}
         onClose={handleToastClose}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert
-          onClose={handleToastClose}
-          severity="success"
-          sx={{ width: "100%" }}
-        >
-          {toastMessage}
-        </Alert>
-    </Snackbar>
+      />
     </Box>
 
   );

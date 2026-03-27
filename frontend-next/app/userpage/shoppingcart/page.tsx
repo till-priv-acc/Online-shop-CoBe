@@ -24,6 +24,7 @@ import HeaderPicture from "@/components/UIElements/HeaderPicture";
 import BoxContent from "@/components/UIElements/BoxContent";
 import { InvoiceCompleteDTO } from "@/constants/invoiceConstants";
 import { UserRole } from "@/constants/userConstants";
+import ToastMesssage from "@/components/UIElements/ToastMessage";
 
 export default function MyShoppingcartPage() {
   const router = useRouter();
@@ -31,9 +32,11 @@ export default function MyShoppingcartPage() {
   // Toast-Zustände
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [toastSeverity, setToastSeverity] = useState<"success" | "error">("success");
 
-  const showToast = (message: string) => {
+  const showToast = (message: string, severity: "success" | "error" = "success") => {
     setToastMessage(message);
+    setToastSeverity(severity);
     setToastOpen(true);
   };
   const handleToastClose = () => setToastOpen(false);
@@ -271,16 +274,12 @@ export default function MyShoppingcartPage() {
     </BoxContent>
 
     {/* Toast */}
-    <Snackbar
-      open={toastOpen}
-      autoHideDuration={3000}
-      onClose={handleToastClose}
-      anchorOrigin={{ vertical: "top", horizontal: "center" }}
-    >
-      <Alert onClose={handleToastClose} severity="success" sx={{ width: "100%" }}>
-        {toastMessage}
-      </Alert>
-    </Snackbar>
+    <ToastMesssage
+        open={toastOpen}
+        message={toastMessage}
+        severity={toastSeverity}
+        onClose={handleToastClose}
+    />
   </Box>
 );
 }

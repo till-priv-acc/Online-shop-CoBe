@@ -3,16 +3,18 @@
 import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
-import { Box, Typography, Divider, Chip } from '@mui/material';
+import { Box, Typography, Divider, Chip, Snackbar, Alert } from '@mui/material';
 import { api } from '@/lib/api';
 import { ProductDBDTO, productCategoryColors } from '@/constants/productConstants';
-import ProductUpdate from "./components/ProductUpdate"
+import ProductUpdate from "./components/ProductUpdate";
 import ProductDelete from './components/ProductDelete';
 import { UserRole } from '@/constants/userConstants';
 import NavbarLong from '@/components/navbar/NavbarLong';
 import BoxContent from '@/components/UIElements/BoxContent';
 import ImageSlider from '@/components/UIElements/ImageSlider';
 import HeaderPicture from '@/components/UIElements/HeaderPicture';
+import AddToCart from './components/AddToCart';
+import ToastMesssage from '@/components/UIElements/ToastMessage';
 
 export default function ProductDetailPage() {
   const router = useRouter();
@@ -31,6 +33,14 @@ export default function ProductDetailPage() {
     setUserRole(check.data.role);
     const res = await api.get<ProductDBDTO>(`/products/product/${id}`);
     return { product: res.data, userid };
+  };
+
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastSeverity, setToastSeverity] = useState<"success" | "error">("success");
+
+  const handleToastClose = () => {
+    setToastOpen(false);
   };
 
   const { data, error, isLoading, mutate } = useSWR(id ? `/products/product/${id}` : null, fetcher);
@@ -188,6 +198,25 @@ export default function ProductDetailPage() {
             </Box>
           </Box>
         )}
+        {userid && userid != product.createFromID && (
+          <Box sx={{ width: "100%"}}>
+            <Divider sx={{width: "100%", mt: 2, mb: 1 }}>Artikel kaufen</Divider>
+            <AddToCart
+            productId={product.id}
+            maxQuantity={product.crowd}
+            onSuccess={() => {
+              setToastMessage("Produkt erfolgreich hinzugefügt!");
+              setToastSeverity("success");
+              setToastOpen(true);
+            }}
+            onError={(msg) => {
+              setToastMessage(msg);
+              setToastSeverity("error");
+              setToastOpen(true);
+            }}
+          />
+          </Box>
+        )}
 
         <Divider sx={{width: "100%", mt: 2, mb: 1 }}>Verkauft von {product.createFrom}</Divider>
         <Typography variant="body1" sx={{ fontWeight: 500 }}>
@@ -195,6 +224,12 @@ export default function ProductDetailPage() {
         </Typography>
       </Box>
     </BoxContent>
+    <ToastMesssage
+        open={toastOpen}
+        message={toastMessage}
+        severity={toastSeverity}
+        onClose={handleToastClose}
+      />
   </Box>
 );
 }
