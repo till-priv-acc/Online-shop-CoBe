@@ -7,6 +7,7 @@ export class AllInvoiceItemsDTO {
     productId?: string | null;
     productName?: string | null;
     productPrice?: number | null;
+    productPicture?: string | null;
 
     constructor(partial: Partial<AllInvoiceItemsDTO>) {
     Object.assign(this, partial);

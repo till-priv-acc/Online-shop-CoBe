@@ -111,7 +111,7 @@ async findOpenInvoice(userId: string): Promise<Invoice | undefined> {
   // Items in der Invoice holen
   const cardItems = await this.shoppingCardRepo.find({
     where: { invoice: { id: invoiceId } },
-    relations: ['product', 'seller'], // Names aus deinen Entities
+    relations: ['product', 'product.pictures', 'seller'], // Names aus deinen Entities
   });
 
   this.logger.log(`[InvoicesService] Gefundene Invoice Items: ${cardItems.length}`);
@@ -127,6 +127,7 @@ async findOpenInvoice(userId: string): Promise<Invoice | undefined> {
       productId: item.product?.id ?? null,
       productName: item.product?.name ?? null,
       productPrice: item.product?.price ?? null,
+      productPicture: item.product?.pictures?.[0]?.fileName ?? null
     })
   );
 

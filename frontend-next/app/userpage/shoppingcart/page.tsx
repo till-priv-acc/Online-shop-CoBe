@@ -16,7 +16,8 @@ import {
   CardActions,
   Button,
 } from "@mui/material";
-import { Add, Remove, Delete } from "@mui/icons-material";
+import { Add, Remove, Delete} from "@mui/icons-material";
+import SearchIcon from '@mui/icons-material/Search';
 import { api } from "@/lib/api";
 import NavbarLong from "@/components/navbar/NavbarLong";
 import HeaderPicture from "@/components/UIElements/HeaderPicture";
@@ -103,6 +104,21 @@ export default function MyShoppingcartPage() {
     }
   };
 
+  const goToDetail = async (productId: string | null, itemId: string) => {
+    try {
+      if(productId) {
+        router.push(`/product/${productId}`)
+      } else {
+        await api.delete(`/invoices/cartItem/${itemId}`);
+        showToast("Item entfernt");
+        mutate();
+      }
+    } catch (err) {
+      console.error("Fehler beim weiterleiten zum Produkt", err);
+      showToast("Fehler beim weiterleiten zum Produkt");
+    }
+  };
+
   const purchaseInvoice = async () => {
     if (!invoice) return;
     try {
@@ -125,12 +141,6 @@ export default function MyShoppingcartPage() {
 
     {/* Hauptinhalt */}
     <BoxContent>
-      {/* Überschrift */}
-      <Box sx={{ textAlign: "center", mb: 3, width: "100%" }}>
-        <Typography variant="h3" sx={{ fontWeight: 700 }}>
-          Mein Warenkorb
-        </Typography>
-      </Box>
 
       {/* Artikel-Box */}
       <Box
@@ -146,32 +156,85 @@ export default function MyShoppingcartPage() {
           alignItems: 'center',
         }}
       >
-        {invoice && invoice.invoiceItems.map((item) => (
-          <Card
-            key={item.id}
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              width: '100%',
-              p: 2,
-              borderRadius: 2,
-              boxShadow: 2,
-            }}
-          >
-            <CardContent sx={{ flex: 1 }}>
-              <Typography variant="h6">{item.productName}</Typography>
-              <Typography color="text.secondary">Seller: {item.seller ?? "Unknown"}</Typography>
-              <Typography color="text.secondary">Price: ${item.productPrice?.toFixed(2)}</Typography>
-            </CardContent>
-            <CardActions>
-              <IconButton onClick={() => updateQuantity(item.productId ?? null, item.quantity - 1, invoice.id, item.id)}><Remove /></IconButton>
-              <Typography sx={{ mx: 1 }}>{item.quantity}</Typography>
-              <IconButton onClick={() => updateQuantity(item.productId ?? null, item.quantity + 1, invoice.id, item.id)}><Add /></IconButton>
-              <IconButton color="error" onClick={() => removeItem(item.id)}><Delete /></IconButton>
-            </CardActions>
-          </Card>
-        ))}
+
+      <Box sx={{ textAlign: "center", mb: 3, width: "100%" }}>
+        <Typography variant="h3" sx={{ fontWeight: 700 }}>
+          Mein Warenkorb
+        </Typography>
+      </Box>
+        {invoice && invoice.invoiceItems.map((item) => {
+          const imageSrc: string = item.productPicture
+            ? `/product-images/${item.productPicture}`
+            : `/images/placeholder.png`;
+
+          const altText: string = item.productName ?? "product image";
+
+          return (
+            <Card
+              key={item.id}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                width: '100%',
+                p: 2,
+                borderRadius: 2,
+                boxShadow: 2,
+                gap: 2
+              }}
+            >
+              {/* 🔥 Bild */}
+              <Box
+                component="img"
+                src={imageSrc}
+                alt={altText}
+                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                  e.currentTarget.src = '/images/placeholder.png';
+                }}
+                sx={{
+                  width: 80,
+                  height: 80,
+                  objectFit: 'cover',
+                  borderRadius: 2
+                }}
+              />
+
+              {/* 🔹 Content */}
+              <CardContent sx={{ flex: 1 }}>
+                <Typography variant="h6">{item.productName}</Typography>
+                <Typography color="text.secondary">
+                  Verkäufer: {item.seller ?? "Unknown"}
+                </Typography>
+                <Typography color="text.secondary">
+                  Preis: €{item.productPrice?.toFixed(2)}
+                </Typography>
+              </CardContent>
+
+              {/* 🔹 Actions */}
+              <CardActions>
+                <IconButton onClick={() =>
+                  updateQuantity(item.productId ?? null, item.quantity - 1, invoice.id, item.id)
+                }>
+                  <Remove />
+                </IconButton>
+
+                <Typography sx={{ mx: 1 }}>{item.quantity}</Typography>
+
+                <IconButton onClick={() =>
+                  updateQuantity(item.productId ?? null, item.quantity + 1, invoice.id, item.id)
+                }>
+                  <Add />
+                </IconButton>
+
+                <IconButton color="error" onClick={() => removeItem(item.id)}>
+                  <Delete />
+                </IconButton>
+                <IconButton color="primary" onClick={() => goToDetail(item.productId ?? null, item.id)}>
+                  <SearchIcon />
+                </IconButton>
+              </CardActions>
+            </Card>
+          );
+        })}
 
         {invoice && invoice.invoiceItems.length === 0 && (
           <Typography variant="body1" sx={{ textAlign: 'center', mt: 2 }}>
