@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectRepository} from '@nestjs/typeorm';
+import { Repository, Not, IsNull } from 'typeorm';
 import { InvoiceLogger } from '../logger/invoice-logger.service';
 
 import { Invoice } from './entities/invoice.entity';
@@ -163,7 +163,13 @@ async findOpenInvoice(userId: string): Promise<Invoice | undefined> {
   this.logger.log(`[InvoicesService] Hole alle Invoices für User ${userId}`);
 
   const invoices = await this.invoiceRepo.find({
-    where: { owner: { id: userId } },
+    where: {
+      owner: {
+        id: userId,
+      },
+      totalPrice: Not(IsNull()),
+      purchasedAt: Not(IsNull()),
+    },
     relations: ['shoppingcard', 'shoppingcard.product', 'owner'],
   });
 
@@ -315,6 +321,7 @@ async markAsBought(invoiceId: string): Promise<Invoice> {
 
   invoice.isBought = true;
   invoice.purchasedAt = new Date();
+  invoice.totalPrice = await this.calculateTotal(invoice.id);
   const savedInvoice = await this.invoiceRepo.save(invoice);
 
   this.logger.log(`[InvoicesService] Invoice ${invoiceId} als gekauft markiert`);

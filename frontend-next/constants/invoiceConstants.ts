@@ -25,3 +25,9 @@ export class InvoiceCompleteDTO {
     Object.assign(this, partial);
   }
 }
+
+export interface Invoice {
+  id: string;
+  totalPrice: number;
+  purchasedAt: string;
+}

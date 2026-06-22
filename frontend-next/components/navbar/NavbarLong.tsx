@@ -68,7 +68,7 @@ export default function NavbarLong({ userRole, currentPath }: NavbarProps) {
   return (
     <AppBar position="static" sx={{ width: "100%", mb: 4, backgroundColor: theme.palette.primary.main }}>
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Typography variant="h5" component={Link} href="/" sx={{ textDecoration: "none", color: "inherit" }}>
+        <Typography variant="h5" component={Link} href="/product" sx={{ textDecoration: "none", color: "inherit" }}>
           MyShop
         </Typography>
 
@@ -100,6 +100,10 @@ export default function NavbarLong({ userRole, currentPath }: NavbarProps) {
               <MenuItem component={Link} href="/userpage/shoppingcart" onClick={handleUserMenuClose} sx={menuItemStyles(currentPath === "/userpage/shoppingcart")}>
                 <ShoppingCart fontSize="medium" />
                 Mein Warenkorb
+              </MenuItem>
+              <MenuItem component={Link} href="/userpage/myinvoices" onClick={handleUserMenuClose} sx={menuItemStyles(currentPath === "/userpage/myinvoices")}>
+                <ShoppingCart fontSize="medium" />
+                Meine Rechnungen
               </MenuItem>
               <MenuItem
                 sx={{
