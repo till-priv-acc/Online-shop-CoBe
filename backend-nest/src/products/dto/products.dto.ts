@@ -33,7 +33,7 @@ export class PictureEntity {
 }
 
 export interface PictureCallDto {
-  fileName: string;
+  fileName?: string;
 }
 
 export interface PictureDBDto {

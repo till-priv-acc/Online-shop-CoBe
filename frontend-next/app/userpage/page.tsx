@@ -7,6 +7,7 @@ import LogoutButton from "../../components/auth/LogoutButton";
 import PasswordChangeButtonModal from "./components/PasswordChangeModal";
 import UpdateUserDataModal from "./components/UpdateUserDataModal";
 import AdminUserTable from "@/components/admin/AdminUserTable";
+import AllInvoicesModal from "./components/AllInvoicesModal";
 import { Box, Typography, Divider, CircularProgress } from "@mui/material";
 import { api } from "../../lib/api";
 import { UserAcc } from "@/constants/userConstants";
@@ -160,41 +161,7 @@ export default function ProfilePage() {
               </Box>
 
               {/* Rechte Box */}
-              <Box
-                sx={{
-                  flex: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 3,
-                  p: 4,
-                  borderRadius: 3,
-                  background: "#fff",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                  minWidth: 300,
-                  width: "100%", // sorgt dafür, dass Rechte Box immer volle Breite des Containers einnimmt
-                }}
-              >
-                <Typography variant="h6">Rechnungen</Typography>
-                <Divider sx={{ mb: 2 }} />
-
-                {invoices.map((inv) => (
-                  <Box
-                    key={inv.id}
-                    sx={{
-                      p: 3,
-                      borderRadius: 2,
-                      border: "1px solid #ddd",
-                      background: "#fafafa",
-                      boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
-                      transition: "0.2s",
-                      "&:hover": { boxShadow: "0 4px 12px rgba(0,0,0,0.1)" },
-                    }}
-                  >
-                    <Typography variant="subtitle1" fontWeight={600}><strong>Rechnungsnr:</strong> {inv.number}</Typography>
-                    <Typography variant="body1" color="primary"><strong>Betrag:</strong> {inv.amount}</Typography>
-                  </Box>
-                ))}
-              </Box>
+              <AllInvoicesModal userId={user.id} />
             </Box>
 
             {/* AdminUserTable: volle Breite wie die oberste Flex-Row */}

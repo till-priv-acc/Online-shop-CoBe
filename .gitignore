@@ -20,3 +20,6 @@ npm-debug.log*
 
 # Ignoriere alle Logs
 logs/
+
+# TypeScript build cache
+**/*.tsbuildinfo
