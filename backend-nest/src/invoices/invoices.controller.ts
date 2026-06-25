@@ -171,6 +171,30 @@ export class InvoicesController {
     }
   }
 
+  @Get('Myinvoice/:invoiceid')
+  @UseGuards(AuthGuard)
+  async getTheInvoiceOfUser(
+    @Param('invoiceid') invoiceid: string,
+    @CurrentUserId() userId: string,
+  ): Promise<InvoiceCompleteDTO> {
+    try {
+      const invoice = await this.invoicesService.findOne(invoiceid);
+
+      if (invoice.owner !== null && invoice.owner !== undefined && invoice.owner.id !== userId) {
+        this.logger.warn(
+          `[InvoicesController] getAllInvoicesUser: Access denied for User ${invoiceid}`,
+        );
+        throw new ForbiddenException('Access denied');
+      }
+
+      return await this.invoicesService.AllInvoiceItems(invoiceid);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      this.logger.error(`[InvoicesController] getAllInvoicesUser Error: ${message}`);
+      throw new InternalServerErrorException(message);
+    }
+  }
+
   @Get('shoppingcard/:invoiceId/:userId')
   @UseGuards(AuthGuard)
   async getInvoiceItems(

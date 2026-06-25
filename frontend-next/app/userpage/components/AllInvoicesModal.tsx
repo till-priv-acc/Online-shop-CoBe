@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { Invoice } from "@/constants/invoiceConstants";
+import { useRouter } from 'next/navigation';
 
 import {
   Box,
@@ -22,6 +23,8 @@ export default function AllInvoicesModal({
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const router = useRouter();
 
   useEffect(() => {
     const loadInvoices = async () => {
@@ -94,7 +97,10 @@ export default function AllInvoicesModal({
             },
           }}
         >
-          <Typography variant="subtitle1" fontWeight={600}>
+          <Typography
+            sx={{ cursor: 'pointer' }}
+            onClick={() => router.push(`/invoices/${invoice.id}`)}
+          >
             <strong>ID:</strong> {invoice.id}
           </Typography>
 
